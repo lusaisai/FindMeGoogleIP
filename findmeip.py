@@ -61,7 +61,11 @@ class FindMeIP:
             if v['loss'] == 0:
                 loss_less.append((k, v['time']))
         if loss_less:
+            s = sorted(loss_less, key=lambda x: x[1])
+            print("IPs ordered by delay time:")
             pprint.PrettyPrinter().pprint(sorted(loss_less, key=lambda x: x[1]))
+            print("IPs concatenated:")
+            print('|'.join([x[0] for x in s]))
         else:
             print("No available servers found")
 
@@ -136,5 +140,6 @@ else:
     print("Usage:")
     print("Check ip from a certain country(like china): findmeip.py cn")
     print("Check ip for a certain host: findmeip.py cn www.baidu.com")
+    print("=" * 50)
     print("Now running default: findmeip.py us www.google.com")
     FindMeIP('www.google.com', 'us').run()
