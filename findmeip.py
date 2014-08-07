@@ -6,6 +6,7 @@ import subprocess
 import threading
 import sys
 import pprint
+import time
 
 
 class FindMeIP:
@@ -37,6 +38,8 @@ class FindMeIP:
         lock = threading.Lock()
         threads = []
         for server in self.dns_servers:
+            if threading.active_count() > 200:
+                time.sleep(1)
             t = NsLookup(self.hostname, server, lock, self.resolved_ips)
             t.start()
             threads.append(t)
@@ -48,6 +51,8 @@ class FindMeIP:
         lock = threading.Lock()
         threads = []
         for ip in self.resolved_ips:
+            if threading.active_count() > 200:
+                time.sleep(1)
             t = Ping(ip, lock, self.ping_results)
             t.start()
             threads.append(t)
