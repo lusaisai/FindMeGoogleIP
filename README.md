@@ -22,6 +22,11 @@ To look up ips in other countries, run these, for a complete list, scroll to the
 ...
 ```
 
+To look up ips in all countries, run this,
+```bash
+./findmeip.py all
+```
+
 To look up other hosts, run this,
 ```bash
 ./findmeip.py cn baidu.com
