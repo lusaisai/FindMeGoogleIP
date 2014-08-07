@@ -18,7 +18,7 @@ class FindMeIP:
 
     def get_dns_servers(self):
         """Get the public dns server list from public-dns.tk"""
-        if self.country == '':
+        if self.country == 'all':
             url = 'http://public-dns.tk/nameservers.json'
         else:
             url = 'http://public-dns.tk/nameserver/%s.json' % self.country
