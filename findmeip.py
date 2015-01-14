@@ -1,4 +1,5 @@
 #! /usr/bin/python3
+import random
 
 import urllib.request
 import json
@@ -213,5 +214,8 @@ else:
     print("Check ip from a certain country(like china): findmeip.py cn")
     print("Check ip for a certain host: findmeip.py cn www.baidu.com")
     print("=" * 50)
-    print("Now running default: findmeip.py us www.google.com")
-    FindMeIP('www.google.com', 'us').run()
+    print("Now running default: find ip of www.google.com from a random country")
+    country = 'us'
+    with open('countries.txt') as f:
+        country = random.choice([line.strip() for line in f.readlines() if line])
+    FindMeIP('www.google.com', country).run()
