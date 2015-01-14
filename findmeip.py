@@ -17,7 +17,7 @@ class FindMeIP:
         self.resolved_ips = set()
         self.ping_results = {}
         self.ip_with_time = []
-        self.available_ips = None
+        self.available_ips = set()
         self.web_reachable = set()
 
     def get_dns_servers(self):
@@ -102,6 +102,7 @@ class FindMeIP:
         self.check_web_reachable()
         self.show_results()
 
+
 class WebRequest(threading.Thread):
     def __init__(self, ip, lock, web_reachable):
         threading.Thread.__init__(self)
@@ -110,8 +111,8 @@ class WebRequest(threading.Thread):
         self.web_reachable = web_reachable
 
     def run(self):
+        url = 'http://' + self.ip
         try:
-            url = 'http://' + self.ip
             print('making web request to %s' % url)
             response = urllib.request.urlopen(url, None, 5)
             self.lock.acquire()
@@ -120,6 +121,7 @@ class WebRequest(threading.Thread):
             self.lock.release()
         except IOError:
             print("Cannot get data from %s" % url)
+
 
 class GetDnsServer(threading.Thread):
     def __init__(self, url, lock, dns_servers):
