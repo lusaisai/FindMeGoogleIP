@@ -28,7 +28,7 @@ class FindMeIP:
             data = urllib.request.urlopen(url).read().decode()
             servers = json.loads(data)
             for server in servers:
-                if server['state'] == 'valid' and '.' in server['ip']:
+                if '.' in server['ip']:
                     self.dns_servers.append(server['ip'])
         except IOError:
             print("Cannot get data from %s" % url)
