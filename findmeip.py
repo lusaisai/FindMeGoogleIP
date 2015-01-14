@@ -89,8 +89,6 @@ class FindMeIP:
         if self.ip_with_time:
             print("IPs ordered by delay time:")
             pprint.PrettyPrinter().pprint(self.ip_with_time)
-            print("IPs concatenated:")
-            print('|'.join(self.available_ips))
             print("IPs serve web:")
             print('|'.join(self.web_reachable))
         else:
