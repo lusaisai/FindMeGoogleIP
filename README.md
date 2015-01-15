@@ -9,7 +9,7 @@ http://public-dns.tk/ has lots of public dns servers, this script queries them a
 
 Usage
 -----
-By default, it looks up google ips in US,
+By default, it looks up google ips in a random chosen country,
 ```bash
 ./findmeip.py
 ```
