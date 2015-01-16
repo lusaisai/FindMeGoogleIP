@@ -8,6 +8,7 @@ import threading
 import sys
 import pprint
 import time
+import os
 
 
 class FindMeIP:
@@ -24,7 +25,7 @@ class FindMeIP:
     def get_dns_servers(self):
         """Get the public dns server list from public-dns.tk"""
         if self.country == 'all':
-            with open('countries.txt') as f:
+            with open(os.path.dirname(os.path.realpath(__file__)) + '/countries.txt') as f:
                 countries = [line.strip() for line in f.readlines() if line]
                 urls = ['http://public-dns.tk/nameserver/%s.json' % country for country in countries]
         else:
@@ -216,6 +217,6 @@ else:
     print("=" * 50)
     print("Now running default: find ip of www.google.com from a random country")
     country = 'us'
-    with open('countries.txt') as f:
+    with open(os.path.dirname(os.path.realpath(__file__)) + '/countries.txt') as f:
         country = random.choice([line.strip() for line in f.readlines() if line])
     FindMeIP('www.google.com', country).run()
