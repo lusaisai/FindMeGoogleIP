@@ -91,11 +91,11 @@ class FindMeIP:
 
     def show_results(self):
         if self.ip_with_time:
-            print("IPs ordered by delay time:")
+            print("%d IPs ordered by delay time:" % len(self.ip_with_time))
             pprint.PrettyPrinter().pprint(self.ip_with_time)
-            print("IPs serve web:")
+            print("%d IPs serve web:" % len(self.web_reachable))
             print('|'.join(self.web_reachable))
-            print("IPs serve cloud:")
+            print("%d IPs serve cloud:" % len(self.cloud_reachable))
             print('|'.join(self.cloud_reachable))
         else:
             print("No available servers found")
