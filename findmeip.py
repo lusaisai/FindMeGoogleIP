@@ -9,27 +9,29 @@ import sys
 import pprint
 import time
 import os
+import socket
 
 
 class FindMeIP:
-    def __init__(self, hostname, country):
+    def __init__(self, hostname, location):
         self.hostname = hostname
-        self.country = country
+        self.location = location
         self.dns_servers = []
         self.resolved_ips = set()
         self.ping_results = {}
         self.ip_with_time = []
         self.available_ips = set()
         self.web_reachable = set()
+        self.cloud_reachable = set()
 
     def get_dns_servers(self):
         """Get the public dns server list from public-dns.tk"""
-        if self.country == 'all':
-            with open(os.path.dirname(os.path.realpath(__file__)) + '/countries.txt') as f:
-                countries = [line.strip() for line in f.readlines() if line]
-                urls = ['http://public-dns.tk/nameserver/%s.json' % country for country in countries]
+        if self.location == 'all':
+            with open(os.path.dirname(os.path.realpath(__file__)) + '/countries.txt') as file:
+                countries = [line.strip() for line in file.readlines() if line]
+                urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in countries]
         else:
-            urls = ['http://public-dns.tk/nameserver/%s.json' % self.country]
+            urls = ['http://public-dns.tk/nameserver/%s.json' % self.location]
 
         lock = threading.Lock()
         threads = []
@@ -66,13 +68,13 @@ class FindMeIP:
         for t in threads:
             t.join()
 
-    def check_web_reachable(self):
+    def check_service(self, port, servicing):
         lock = threading.Lock()
         threads = []
         for ip in self.available_ips:
             if threading.active_count() > 50:
                 time.sleep(1)
-            t = WebRequest(ip, lock, self.web_reachable)
+            t = ServiceCheck(ip, port, lock, servicing)
             t.start()
             threads.append(t)
 
@@ -93,6 +95,8 @@ class FindMeIP:
             pprint.PrettyPrinter().pprint(self.ip_with_time)
             print("IPs serve web:")
             print('|'.join(self.web_reachable))
+            print("IPs serve cloud:")
+            print('|'.join(self.cloud_reachable))
         else:
             print("No available servers found")
 
@@ -101,28 +105,28 @@ class FindMeIP:
         self.lookup_ips()
         self.ping()
         self.summarize()
-        self.check_web_reachable()
+        self.check_service(80, self.web_reachable)
+        self.check_service(443, self.cloud_reachable)
         self.show_results()
 
 
-class WebRequest(threading.Thread):
-    def __init__(self, ip, lock, web_reachable):
+class ServiceCheck(threading.Thread):
+    def __init__(self, ip, port, lock, servicing):
         threading.Thread.__init__(self)
         self.ip = ip
+        self.port = port
         self.lock = lock
-        self.web_reachable = web_reachable
+        self.servicing = servicing
 
     def run(self):
-        url = 'http://' + self.ip
         try:
-            print('making web request to %s' % url)
-            response = urllib.request.urlopen(url, None, 5)
+            print('check service %s:%s' % (self.ip, self.port))
+            socket.create_connection((self.ip, self.port), 5)
             self.lock.acquire()
-            if response.status == 200:
-                self.web_reachable.add(self.ip)
+            self.servicing.add(self.ip)
             self.lock.release()
-        except IOError:
-            print("Cannot get data from %s" % url)
+        except socket.timeout:
+            print("%s is not serving on port %s" % (self.ip, self.port))
 
 
 class GetDnsServer(threading.Thread):
