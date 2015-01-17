@@ -28,7 +28,7 @@ class FindMeIP:
         """Get the public dns server list from public-dns.tk"""
         if self.location == 'all':
             with open(os.path.dirname(os.path.realpath(__file__)) + '/countries.txt') as file:
-                countries = [line.strip() for line in file.readlines() if line]
+                countries = [line.strip() for line in file.readlines() if line.strip()]
                 urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in countries]
         else:
             urls = ['http://public-dns.tk/nameserver/%s.json' % self.location]
