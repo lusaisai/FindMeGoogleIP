@@ -24,12 +24,15 @@ class FindMeIP:
         self.web_reachable = set()
         self.cloud_reachable = set()
 
+    @staticmethod
+    def read_countries():
+        with open(os.path.dirname(os.path.realpath(__file__)) + '/countries.txt') as file:
+            return [line.strip() for line in file.readlines() if line.strip()]
+
     def get_dns_servers(self):
         """Get the public dns server list from public-dns.tk"""
         if self.location == 'all':
-            with open(os.path.dirname(os.path.realpath(__file__)) + '/countries.txt') as file:
-                countries = [line.strip() for line in file.readlines() if line.strip()]
-                urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in countries]
+                urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in FindMeIP.read_countries()]
         else:
             urls = ['http://public-dns.tk/nameserver/%s.json' % self.location]
 
@@ -72,7 +75,7 @@ class FindMeIP:
         lock = threading.Lock()
         threads = []
         for ip in self.available_ips:
-            if threading.active_count() > 50:
+            if threading.active_count() > 200:
                 time.sleep(1)
             t = ServiceCheck(ip, port, lock, servicing)
             t.start()
@@ -121,7 +124,7 @@ class ServiceCheck(threading.Thread):
     def run(self):
         try:
             print('check service %s:%s' % (self.ip, self.port))
-            socket.create_connection((self.ip, self.port), 5)
+            socket.create_connection((self.ip, self.port), 1)
             self.lock.acquire()
             self.servicing.add(self.ip)
             self.lock.release()
@@ -220,7 +223,4 @@ else:
     print("Check ip for a certain host: findmeip.py cn www.baidu.com")
     print("=" * 50)
     print("Now running default: find ip of www.google.com from a random country")
-    country = 'us'
-    with open(os.path.dirname(os.path.realpath(__file__)) + '/countries.txt') as f:
-        country = random.choice([line.strip() for line in f.readlines() if line])
-    FindMeIP('www.google.com', country).run()
+    FindMeIP('www.google.com', random.choice(FindMeIP.read_countries())).run()
