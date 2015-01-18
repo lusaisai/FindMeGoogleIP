@@ -14,7 +14,7 @@ By default, it looks up google ips in a random chosen country,
 ./findmeip.py
 ```
 
-To look up ips in other countries, run these, for a complete list, scroll to the end
+To look up ips in a specified country, run these, for a complete list, scroll to the end
 ```bash
 ./findmeip.py cn #China
 ./findmeip.py sg #Singapore
@@ -29,7 +29,7 @@ To look up ips in all countries, run this,
 
 To look up other hosts, run this,
 ```bash
-./findmeip.py cn baidu.com
+./findmeip.py github.com
 ```
 
 Country list

@@ -1,6 +1,5 @@
 #! /usr/bin/python3
 import random
-
 import urllib.request
 import json
 import subprocess
@@ -214,13 +213,17 @@ class Ping(threading.Thread):
 
 
 if len(sys.argv) == 2:
-    FindMeIP('www.google.com', sys.argv[1]).run()
+    if '.' in sys.argv[1]:
+        FindMeIP(sys.argv[1], random.choice(FindMeIP.read_countries())).run()
+    else:
+        FindMeIP('www.google.com', sys.argv[1]).run()
 elif len(sys.argv) == 3:
     FindMeIP(sys.argv[2], sys.argv[1]).run()
 else:
     print("Usage:")
     print("Check ip from a certain country(like china): findmeip.py cn")
-    print("Check ip for a certain host: findmeip.py cn www.baidu.com")
+    print("Check ip for a certain host: findmeip.py github.com")
+    print("Check ip for a certain host from a certain country: findmeip.py cn github.com")
     print("=" * 50)
     print("Now running default: find ip of www.google.com from a random country")
     FindMeIP('www.google.com', random.choice(FindMeIP.read_countries())).run()
