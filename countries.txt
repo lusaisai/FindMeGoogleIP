@@ -39,7 +39,6 @@ ky
 cf
 td
 cl
-cn
 co
 km
 cg

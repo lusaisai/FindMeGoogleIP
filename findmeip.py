@@ -221,7 +221,7 @@ elif len(sys.argv) == 3:
     FindMeIP(sys.argv[1], sys.argv[2]).run()
 else:
     print("Usage:")
-    print("Check ip from a certain country(like china): findmeip.py cn")
+    print("Check ip from a certain country: findmeip.py us")
     print("Check ip for a certain host: findmeip.py github.com")
     print("Check ip for a certain host from a certain country: findmeip.py github.com us")
     print("=" * 50)
