@@ -16,7 +16,6 @@ By default, it looks up google ips in a random chosen country,
 
 To look up ips in a specified country, run these, for a complete list, scroll to the end
 ```bash
-./findmeip.py cn #China
 ./findmeip.py sg #Singapore
 ./findmeip.py au #Australia
 ...
@@ -76,7 +75,6 @@ ky Cayman Islands
 cf Central African Republic
 td Chad
 cl Chile
-cn China
 co Colombia
 km Comoros
 cg Congo
