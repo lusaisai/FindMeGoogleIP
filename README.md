@@ -30,6 +30,7 @@ To look up ips in all countries, run this,
 To look up other hosts, run this,
 ```bash
 ./findmeip.py github.com
+./findmeip.py github.com us
 ```
 
 Country list
