@@ -70,6 +70,21 @@ class FindMeIP:
         for t in threads:
             t.join()
 
+    def check_web_and_cloud(self):
+        s = set()
+        self.check_service(80, s)
+        # the loop below is to keep the ping order
+        for e in self.available_ips:
+            if e in s:
+                self.web_reachable.append(e)
+
+        s = set()
+        self.check_service(443, s)
+        # the loop below is to keep the ping order
+        for e in self.available_ips:
+            if e in s:
+                self.cloud_reachable.append(e)
+
     def check_service(self, port, servicing):
         lock = threading.Lock()
         threads = []
@@ -107,8 +122,7 @@ class FindMeIP:
         self.lookup_ips()
         self.ping()
         self.summarize()
-        self.check_service(80, self.web_reachable)
-        self.check_service(443, self.cloud_reachable)
+        self.check_web_and_cloud()
         self.show_results()
 
 
@@ -125,7 +139,7 @@ class ServiceCheck(threading.Thread):
             print('check service %s:%s' % (self.ip, self.port))
             socket.create_connection((self.ip, self.port), 1)
             self.lock.acquire()
-            self.servicing.append(self.ip)
+            self.servicing.add(self.ip)
             self.lock.release()
         except socket.timeout:
             print("%s is not serving on port %s" % (self.ip, self.port))
