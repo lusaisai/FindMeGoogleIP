@@ -19,9 +19,9 @@ class FindMeIP:
         self.resolved_ips = set()
         self.ping_results = {}
         self.ip_with_time = []
-        self.available_ips = set()
-        self.web_reachable = set()
-        self.cloud_reachable = set()
+        self.available_ips = []
+        self.web_reachable = []
+        self.cloud_reachable = []
 
     @staticmethod
     def read_countries():
@@ -125,7 +125,7 @@ class ServiceCheck(threading.Thread):
             print('check service %s:%s' % (self.ip, self.port))
             socket.create_connection((self.ip, self.port), 1)
             self.lock.acquire()
-            self.servicing.add(self.ip)
+            self.servicing.append(self.ip)
             self.lock.release()
         except socket.timeout:
             print("%s is not serving on port %s" % (self.ip, self.port))
