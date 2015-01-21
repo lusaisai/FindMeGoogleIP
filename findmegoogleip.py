@@ -24,14 +24,14 @@ class FindMeIP:
         self.reachable = []
 
     @staticmethod
-    def read_countries():
-        with open(os.path.dirname(os.path.realpath(__file__)) + '/countries.txt') as file:
+    def read_domains():
+        with open(os.path.dirname(os.path.realpath(__file__)) + '/domains.txt') as file:
             return [line.strip() for line in file.readlines() if line.strip()]
 
     def get_dns_servers(self):
         """Get the public dns server list from public-dns.tk"""
         if self.locations == 'all':
-                urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in FindMeIP.read_countries()]
+                urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in FindMeIP.read_domains()]
         else:
             urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in self.locations]
 
@@ -218,7 +218,7 @@ if len(sys.argv) >= 2:
         FindMeIP(sys.argv[1:]).run()
 else:
     print("Usage:")
-    print("Check ip in specified countries: findmegoogleip.py kr us")
+    print("Check ip in specified domains: findmegoogleip.py kr us")
     print("=" * 50)
-    print("Now running default: find ip from a random chosen country")
-    FindMeIP([random.choice(FindMeIP.read_countries())]).run()
+    print("Now running default: find ip from a random chosen domain")
+    FindMeIP([random.choice(FindMeIP.read_domains())]).run()

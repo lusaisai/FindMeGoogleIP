@@ -9,23 +9,23 @@ http://public-dns.tk/ has lots of public dns servers, this script queries them a
 
 Usage
 -----
-By default, it looks up google ips in a random chosen country,
+By default, it looks up google ips in a random chosen domain,
 ```bash
 ./findmeip.py
 ```
 
-To look up ips in specified countries, run these, for a complete list, scroll to the end
+To look up ips in specified domains, run these, for a complete list, scroll to the end
 ```bash
 ./findmeip.py sg au #Singapore and Australia
 ...
 ```
 
-To look up ips in all countries, run this,
+To look up ips in all domains, run this,
 ```bash
 ./findmeip.py all
 ```
 
-Country list
+Domain list
 ```
 af Afghanistan
 al Albania
