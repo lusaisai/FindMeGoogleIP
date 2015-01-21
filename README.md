@@ -11,18 +11,18 @@ Usage
 -----
 By default, it looks up google ips in a random chosen domain,
 ```bash
-./findmeip.py
+./findmegoogleip.py
 ```
 
-To look up ips in specified domains, run these, for a complete list, scroll to the end
+To look up ips in specified domains, run these, for a complete list, see below domain list
 ```bash
-./findmeip.py hk mo tw jp kr
+./findmegoogleip.py hk mo tw jp kr
 ...
 ```
 
 To look up ips in all domains, run this,
 ```bash
-./findmeip.py all
+./findmegoogleip.py all
 ```
 
 Domain list
