@@ -35,9 +35,8 @@ class FindMeGoogleIP:
             thread.lock = lock
             if threading.active_count() > limit:
                 time.sleep(1)
-                continue
-            else:
-                thread.start()
+
+            thread.start()
 
         for thread in threads:
             thread.join()
