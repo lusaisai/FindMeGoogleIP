@@ -43,7 +43,7 @@ class FindMeGoogleIP:
 
     def get_dns_servers(self):
         """Get the public dns server list from public-dns.tk"""
-        if self.locations == 'all':
+        if self.locations == ['all']:
             self.locations = FindMeGoogleIP.read_domains()
         urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in self.locations]
 
