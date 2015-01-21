@@ -16,7 +16,7 @@ By default, it looks up google ips in a random chosen domain,
 
 To look up ips in specified domains, run these, for a complete list, scroll to the end
 ```bash
-./findmeip.py sg au #Singapore and Australia
+./findmeip.py hk mo tw jp kr
 ...
 ```
 
