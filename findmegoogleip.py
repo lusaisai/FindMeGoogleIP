@@ -13,7 +13,7 @@ import socket
 import ssl
 
 
-class FindMeIP:
+class FindMeGoogleIP:
     def __init__(self, locations):
         self.locations = locations
         self.dns_servers = []
@@ -45,21 +45,21 @@ class FindMeIP:
     def get_dns_servers(self):
         """Get the public dns server list from public-dns.tk"""
         if self.locations == 'all':
-            self.locations = FindMeIP.read_domains()
+            self.locations = FindMeGoogleIP.read_domains()
         urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in self.locations]
 
         threads = []
         for url in urls:
             threads.append(GetDnsServer(url, self.dns_servers))
 
-        FindMeIP.run_threads(threads, 20)
+        FindMeGoogleIP.run_threads(threads, 20)
 
     def lookup_ips(self):
         threads = []
         for server in self.dns_servers:
             threads.append(NsLookup('google.com', server, self.resolved_ips))
 
-        FindMeIP.run_threads(threads)
+        FindMeGoogleIP.run_threads(threads)
 
     def ping(self):
         ping_results = {}
@@ -67,7 +67,7 @@ class FindMeIP:
         for ip in self.resolved_ips:
             threads.append(Ping(ip, ping_results))
 
-        FindMeIP.run_threads(threads)
+        FindMeGoogleIP.run_threads(threads)
 
         for k, v in ping_results.items():
             if v['loss'] == 0:
@@ -81,7 +81,7 @@ class FindMeIP:
         for ip in self.available_ips:
             threads.append(ServiceCheck(ip, self.reachable))
 
-        FindMeIP.run_threads(threads)
+        FindMeGoogleIP.run_threads(threads)
 
     def show_results(self):
         if self.reachable:
@@ -204,10 +204,10 @@ class Ping(threading.Thread):
 
 
 if len(sys.argv) >= 2:
-        FindMeIP(sys.argv[1:]).run()
+        FindMeGoogleIP(sys.argv[1:]).run()
 else:
     print("Usage:")
     print("Find ips in specified domains: findmegoogleip.py kr us")
     print("=" * 50)
     print("Now running default: find ip from a random chosen domain")
-    FindMeIP([random.choice(FindMeIP.read_domains())]).run()
+    FindMeGoogleIP([random.choice(FindMeGoogleIP.read_domains())]).run()
