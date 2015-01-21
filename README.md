@@ -30,218 +30,218 @@ Domain list
 Asia
 ====
 am Armenia
-la Lao People's Democratic Republic
-mn Mongolia
-jp Japan
-ir Iran, Islamic Republic of
-ge Georgia
-uz Uzbekistan
-tw Taiwan, Province of China
-sg Singapore
-kr Korea, Republic of
-sa Saudi Arabia
-mm Myanmar
-qa Qatar
-kh Cambodia
-cy Cyprus
-om Oman
-ph Philippines
-mo Macao
-kw Kuwait
-in India
-np Nepal
-pk Pakistan
-af Afghanistan
-il Israel
-id Indonesia
-hk Hong Kong
-vn Viet Nam
-tj Tajikistan
 ae United Arab Emirates
-bd Bangladesh
-sy Syrian Arab Republic
-lk Sri Lanka
-bn Brunei Darussalam
-kg Kyrgyzstan
-lb Lebanon
-th Thailand
-az Azerbaijan
-bh Bahrain
-iq Iraq
-tm Turkmenistan
-kz Kazakhstan
-jo Jordan
-ye Yemen
-bt Bhutan
-to Tonga
-ki Kiribati
-pf French Polynesia
-ck Cook Islands
+af Afghanistan
 as American Samoa
-nc New Caledonia
-nu Niue
-nr Nauru
-gu Guam
-fj Fiji
-ws Samoa
 au Australia
+az Azerbaijan
+bd Bangladesh
+bh Bahrain
+bn Brunei Darussalam
+bt Bhutan
+ck Cook Islands
+cy Cyprus
+fj Fiji
+ge Georgia
+gu Guam
+hk Hong Kong
+id Indonesia
+il Israel
+in India
+iq Iraq
+ir Iran, Islamic Republic of
+jo Jordan
+jp Japan
+kg Kyrgyzstan
+kh Cambodia
+ki Kiribati
+kr Korea, Republic of
+kw Kuwait
+kz Kazakhstan
+la Lao People's Democratic Republic
+lb Lebanon
+lk Sri Lanka
+mm Myanmar
+mn Mongolia
+mo Macao
 my Malaysia
+nc New Caledonia
+np Nepal
+nr Nauru
+nu Niue
 nz New Zealand
+om Oman
+pf French Polynesia
 pg Papua New Guinea
+ph Philippines
+pk Pakistan
 ps Palestine, State of
+qa Qatar
+sa Saudi Arabia
+sg Singapore
+sy Syrian Arab Republic
+th Thailand
+tj Tajikistan
+tm Turkmenistan
+to Tonga
+tw Taiwan, Province of China
+uz Uzbekistan
+vn Viet Nam
+ws Samoa
+ye Yemen
 
 
 America
 =======
-ca Canada
-hn Honduras
-vc Saint Vincent and the Grenadines
-vi Virgin Islands, U.S.
-lc Saint Lucia
-ai Anguilla
-kn Saint Kitts and Nevis
-do Dominican Republic
-cl Chile
-pr Puerto Rico
-ht Haiti
-tt Trinidad and Tobago
-sr Suriname
-pa Panama
-bs Bahamas
-uy Uruguay
-pm Saint Pierre and Miquelon
-mx Mexico
-mq Martinique
-ni Nicaragua
-us United States
-pe Peru
-bo Bolivia, Plurinational State of
-jm Jamaica
-cu Cuba
-gy Guyana
-ec Ecuador
-gt Guatemala
-gp Guadeloupe
-gd Grenada
-tc Turks and Caicos Islands
-gl Greenland
-sv El Salvador
-dm Dominica
-cr Costa Rica
-ky Cayman Islands
-gf French Guiana
-ve Venezuela, Bolivarian Republic of
-co Colombia
-bz Belize
-bb Barbados
-py Paraguay
-aw Aruba
-ar Argentina
 ag Antigua and Barbuda
-vg Virgin Islands, British
+ai Anguilla
+ar Argentina
+aw Aruba
+bb Barbados
+bo Bolivia, Plurinational State of
 br Brazil
+bs Bahamas
+bz Belize
+ca Canada
+cl Chile
+co Colombia
+cr Costa Rica
+cu Cuba
+dm Dominica
+do Dominican Republic
+ec Ecuador
+gd Grenada
+gf French Guiana
+gl Greenland
+gp Guadeloupe
+gt Guatemala
+gy Guyana
+hn Honduras
+ht Haiti
+jm Jamaica
+kn Saint Kitts and Nevis
+ky Cayman Islands
+lc Saint Lucia
+mq Martinique
+mx Mexico
+ni Nicaragua
+pa Panama
+pe Peru
+pm Saint Pierre and Miquelon
+pr Puerto Rico
+py Paraguay
+sr Suriname
+sv El Salvador
+tc Turks and Caicos Islands
+tt Trinidad and Tobago
+us United States
+uy Uruguay
+vc Saint Vincent and the Grenadines
+ve Venezuela, Bolivarian Republic of
+vg Virgin Islands, British
+vi Virgin Islands, U.S.
 
 
 Europe
 ======
-de Germany
-pt Portugal
-es Spain
-ch Switzerland
-hr Croatia
-pl Poland
-lt Lithuania
-at Austria
-li Liechtenstein
-al Albania
-ee Estonia
-se Sweden
-bg Bulgaria
-mk Macedonia, Republic of
-ba Bosnia and Herzegovina
-sm San Marino
-it Italy
-lv Latvia
-cz Czech Republic
-fr France
-yt Mayotte
-tg Togo
-no Norway
-ru Russian Federation
-mc Monaco
-by Belarus
-mt Malta
-lu Luxembourg
-gb United Kingdom
-si Slovenia
-ua Ukraine
-tr Turkey
-fi Finland
-gi Gibraltar
-ie Ireland
-dk Denmark
-md Moldova, Republic of
-hu Hungary
-ro Romania
-be Belgium
-sk Slovakia
-gr Greece
 ad Andorra
-nl Netherlands
-is Iceland
-cv Cape Verde
+al Albania
+at Austria
+ba Bosnia and Herzegovina
+be Belgium
+bg Bulgaria
 bm Bermuda
+by Belarus
+ch Switzerland
+cv Cape Verde
+cz Czech Republic
+de Germany
+dk Denmark
+ee Estonia
+es Spain
+fi Finland
+fr France
+gb United Kingdom
+gi Gibraltar
+gr Greece
+hr Croatia
+hu Hungary
+ie Ireland
+is Iceland
+it Italy
+li Liechtenstein
+lt Lithuania
+lu Luxembourg
+lv Latvia
+mc Monaco
+md Moldova, Republic of
+mk Macedonia, Republic of
+mt Malta
+nl Netherlands
+no Norway
+pl Poland
+pt Portugal
+ro Romania
+ru Russian Federation
+se Sweden
+si Slovenia
+sk Slovakia
+sm San Marino
+tg Togo
+tr Turkey
+ua Ukraine
+yt Mayotte
 
 
 Africa
 ======
-na Namibia
-tn Tunisia
-ly Libya
-bj Benin
-bf Burkina Faso
-mr Mauritania
-ne Niger
-ke Kenya
-lr Liberia
-so Somalia
-sz Swaziland
-ls Lesotho
-mz Mozambique
-gq Equatorial Guinea
-zm Zambia
 ao Angola
-ga Gabon
-ng Nigeria
-rw Rwanda
-sd Sudan
-ug Uganda
-za South Africa
-zw Zimbabwe
+bf Burkina Faso
+bi Burundi
+bj Benin
 bw Botswana
-sl Sierra Leone
+cd Congo, The Democratic Republic of the
+cf Central African Republic
+cg Congo
+ci Côte d'Ivoire
 cm Cameroon
 dj Djibouti
-tz Tanzania, United Republic of
-sn Senegal
-gn Guinea
-ma Morocco
-eg Egypt
-bi Burundi
-cg Congo
-mw Malawi
-gm Gambia
-cf Central African Republic
-ml Mali
-er Eritrea
 dz Algeria
+eg Egypt
+er Eritrea
 et Ethiopia
+ga Gabon
 gh Ghana
-ci Côte d'Ivoire
-re Réunion
+gm Gambia
+gn Guinea
+gq Equatorial Guinea
+ke Kenya
+lr Liberia
+ls Lesotho
+ly Libya
+ma Morocco
+mg Madagascar
+ml Mali
+mr Mauritania
 mu Mauritius
 mv Maldives
+mw Malawi
+mz Mozambique
+na Namibia
+ne Niger
+ng Nigeria
+re Réunion
+rw Rwanda
 sc Seychelles
-mg Madagascar
-cd Congo, The Democratic Republic of the
+sd Sudan
+sl Sierra Leone
+sn Senegal
+so Somalia
+sz Swaziland
+tn Tunisia
+tz Tanzania, United Republic of
+ug Uganda
+za South Africa
+zm Zambia
+zw Zimbabwe
 ```
