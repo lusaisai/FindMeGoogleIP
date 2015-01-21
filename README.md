@@ -1,6 +1,6 @@
 FindMeIP
 ========
-Query thousands of dns servers to find the ip of a certain host such as google.
+Query thousands of dns servers to find the ips of google.
 
 
 Explain
@@ -14,22 +14,15 @@ By default, it looks up google ips in a random chosen country,
 ./findmeip.py
 ```
 
-To look up ips in a specified country, run these, for a complete list, scroll to the end
+To look up ips in specified countries, run these, for a complete list, scroll to the end
 ```bash
-./findmeip.py sg #Singapore
-./findmeip.py au #Australia
+./findmeip.py sg au #Singapore and Australia
 ...
 ```
 
 To look up ips in all countries, run this,
 ```bash
 ./findmeip.py all
-```
-
-To look up other hosts, run this,
-```bash
-./findmeip.py github.com
-./findmeip.py github.com us
 ```
 
 Country list

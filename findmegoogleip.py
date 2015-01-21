@@ -1,4 +1,5 @@
 #! /usr/bin/python3
+
 import random
 import urllib.request
 import json
@@ -9,19 +10,18 @@ import pprint
 import time
 import os
 import socket
+import ssl
 
 
 class FindMeIP:
-    def __init__(self, hostname, location):
-        self.hostname = hostname
-        self.location = location
+    def __init__(self, locations):
+        self.locations = locations
         self.dns_servers = []
         self.resolved_ips = set()
         self.ping_results = {}
         self.ip_with_time = []
         self.available_ips = []
-        self.web_reachable = []
-        self.cloud_reachable = []
+        self.reachable = []
 
     @staticmethod
     def read_countries():
@@ -30,14 +30,16 @@ class FindMeIP:
 
     def get_dns_servers(self):
         """Get the public dns server list from public-dns.tk"""
-        if self.location == 'all':
+        if self.locations == 'all':
                 urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in FindMeIP.read_countries()]
         else:
-            urls = ['http://public-dns.tk/nameserver/%s.json' % self.location]
+            urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in self.locations]
 
         lock = threading.Lock()
         threads = []
         for url in urls:
+            if threading.active_count() > 50:
+                time.sleep(1)
             t = GetDnsServer(url, lock, self.dns_servers)
             t.start()
             threads.append(t)
@@ -50,7 +52,7 @@ class FindMeIP:
         for server in self.dns_servers:
             if threading.active_count() > 200:
                 time.sleep(1)
-            t = NsLookup(self.hostname, server, lock, self.resolved_ips)
+            t = NsLookup('google.com', server, lock, self.resolved_ips)
             t.start()
             threads.append(t)
 
@@ -70,28 +72,13 @@ class FindMeIP:
         for t in threads:
             t.join()
 
-    def check_web_and_cloud(self):
-        s = set()
-        self.check_service(80, s)
-        # the loop below is to keep the ping order
-        for e in self.available_ips:
-            if e in s:
-                self.web_reachable.append(e)
-
-        s = set()
-        self.check_service(443, s)
-        # the loop below is to keep the ping order
-        for e in self.available_ips:
-            if e in s:
-                self.cloud_reachable.append(e)
-
-    def check_service(self, port, servicing):
+    def check_service(self, servicing):
         lock = threading.Lock()
         threads = []
         for ip in self.available_ips:
             if threading.active_count() > 200:
                 time.sleep(1)
-            t = ServiceCheck(ip, port, lock, servicing)
+            t = ServiceCheck(ip, lock, servicing)
             t.start()
             threads.append(t)
 
@@ -107,13 +94,12 @@ class FindMeIP:
         self.available_ips = [x[0] for x in self.ip_with_time]
 
     def show_results(self):
-        if self.ip_with_time:
-            print("%d IPs ordered by delay time:" % len(self.ip_with_time))
-            pprint.PrettyPrinter().pprint(self.ip_with_time)
-            print("%d IPs serve web:" % len(self.web_reachable))
-            print('|'.join(self.web_reachable))
-            print("%d IPs serve cloud:" % len(self.cloud_reachable))
-            print('|'.join(self.cloud_reachable))
+        if self.reachable:
+            reachable_ip_with_time = [(ip, rtt) for (ip, rtt) in self.ip_with_time if ip in self.reachable]
+            print("%d IPs ordered by delay time:" % len(reachable_ip_with_time))
+            pprint.PrettyPrinter().pprint(reachable_ip_with_time)
+            print("%d IPs concatenated:" % len(self.reachable))
+            print('|'.join(self.reachable))
         else:
             print("No available servers found")
 
@@ -122,27 +108,29 @@ class FindMeIP:
         self.lookup_ips()
         self.ping()
         self.summarize()
-        self.check_web_and_cloud()
+        self.check_service(self.reachable)
         self.show_results()
 
 
 class ServiceCheck(threading.Thread):
-    def __init__(self, ip, port, lock, servicing):
+    def __init__(self, ip, lock, servicing):
         threading.Thread.__init__(self)
         self.ip = ip
-        self.port = port
+        self.port = 443
         self.lock = lock
         self.servicing = servicing
 
     def run(self):
         try:
-            print('check service %s:%s' % (self.ip, self.port))
-            socket.create_connection((self.ip, self.port), 1)
+            print('checking ssl service %s:%s' % (self.ip, self.port))
+            socket.setdefaulttimeout(2)
+            conn = ssl.create_default_context().wrap_socket(socket.socket(), server_hostname="www.google.com" )
+            conn.connect((self.ip, self.port))
             self.lock.acquire()
-            self.servicing.add(self.ip)
+            self.servicing.append(self.ip)
             self.lock.release()
-        except socket.timeout:
-            print("%s is not serving on port %s" % (self.ip, self.port))
+        except (ssl.CertificateError, socket.timeout) as err:
+            print("error(%s) on connecting %s:%s" % (str(err), self.ip, self.port))
 
 
 class GetDnsServer(threading.Thread):
@@ -212,7 +200,7 @@ class Ping(threading.Thread):
     def run(self):
         try:
             print('pinging %s' % (self.server,))
-            output = subprocess.check_output(["ping", '-c 10', '-q', self.server])
+            output = subprocess.check_output(["ping", '-c 5', '-q', self.server])
             self.lock.acquire()
             self.store[self.server] = self.parse_ping_result(output.decode())
             self.lock.release()
@@ -226,18 +214,11 @@ class Ping(threading.Thread):
         return {'loss': float(loss), 'time': float(trip_time)}
 
 
-if len(sys.argv) == 2:
-    if '.' in sys.argv[1]:
-        FindMeIP(sys.argv[1], random.choice(FindMeIP.read_countries())).run()
-    else:
-        FindMeIP('www.google.com', sys.argv[1]).run()
-elif len(sys.argv) == 3:
-    FindMeIP(sys.argv[1], sys.argv[2]).run()
+if len(sys.argv) >= 2:
+        FindMeIP(sys.argv[1:]).run()
 else:
     print("Usage:")
-    print("Check ip from a certain country: findmeip.py us")
-    print("Check ip for a certain host: findmeip.py github.com")
-    print("Check ip for a certain host from a certain country: findmeip.py github.com us")
+    print("Check ip in specified countries: findmegoogleip.py kr us")
     print("=" * 50)
-    print("Now running default: find ip of www.google.com from a random country")
-    FindMeIP('www.google.com', random.choice(FindMeIP.read_countries())).run()
+    print("Now running default: find ip from a random chosen country")
+    FindMeIP([random.choice(FindMeIP.read_countries())]).run()
