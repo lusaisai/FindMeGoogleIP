@@ -14,7 +14,7 @@ By default, it looks up google ips in a random chosen domain,
 ./findmegoogleip.py
 ```
 
-To look up ips in specified domains, run these, for a complete list, see below domain list
+To look up ips in specified domains, run these, for a complete list, see below domain map and list
 ```bash
 ./findmegoogleip.py hk mo tw jp kr
 ```
@@ -24,7 +24,11 @@ To look up ips in all domains, run this,
 ./findmegoogleip.py all
 ```
 
-Domain list
+Domain map and list
+-------------------
+![domain map](https://raw.githubusercontent.com/lusaisai/FindMeGoogleIP/master/domain_map.png "domain map")
+
+
 ```
 Asia
 ====
