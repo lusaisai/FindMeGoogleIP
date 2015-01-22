@@ -157,8 +157,7 @@ class NsLookup(threading.Thread):
             ips = self.parse_nslookup_result(output.decode())
             self.lock.acquire()
             for ip in ips:
-                # google is heavily blocked in china, most of these official addresses won't work
-                if 'google' in self.name and (ip.startswith('74.') or ip.startswith('173.')):
+                if ip.startswith('74.') or ip.startswith('173.'):
                     continue
                 self.store.add(ip)
             self.lock.release()
