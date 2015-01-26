@@ -207,5 +207,5 @@ else:
     print("Usage:")
     print("Find ips in specified domains: findmegoogleip.py kr us")
     print("=" * 50)
-    print("Now running default: find ip from a random chosen domain")
+    print("Now running default: find ip from a randomly chosen domain")
     FindMeGoogleIP([random.choice(FindMeGoogleIP.read_domains())]).run()
