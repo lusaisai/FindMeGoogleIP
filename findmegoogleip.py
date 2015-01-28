@@ -85,12 +85,32 @@ class FindMeGoogleIP:
     def show_results(self):
         if self.reachable:
             reachable_ip_with_time = [(ip, rtt) for (ip, rtt) in self.ip_with_time if ip in self.reachable]
+
             print("%d IPs ordered by delay time:" % len(reachable_ip_with_time))
             pprint.PrettyPrinter().pprint(reachable_ip_with_time)
+
+            fast_ips = []
+            slow_ips = []
+            for ip, rtt in reachable_ip_with_time:
+                if rtt <= 200:
+                    fast_ips.append(ip)
+                else:
+                    slow_ips.append(ip)
             print("%d IPs concatenated:" % len(self.reachable))
-            print('|'.join(self.reachable))
+            if fast_ips:
+                FindMeGoogleIP.highlight_print('|'.join(fast_ips))
+            if slow_ips:
+                if fast_ips:
+                    print('|', end="")
+                print('|'.join(slow_ips))
         else:
             print("No available servers found")
+
+    @staticmethod
+    def highlight_print(word):
+        green = '\033[32m'
+        reset = '\033[0m'
+        print(green + word + reset, end="")
 
     def run(self):
         self.get_dns_servers()
@@ -117,7 +137,7 @@ class ServiceCheck(threading.Thread):
             self.lock.acquire()
             self.servicing.append(self.ip)
             self.lock.release()
-        except (ssl.CertificateError, socket.timeout) as err:
+        except (ssl.CertificateError, socket.timeout, ConnectionResetError) as err:
             print("error(%s) on connecting %s:%s" % (str(err), self.ip, self.port))
 
 
@@ -202,7 +222,7 @@ class Ping(threading.Thread):
 
 
 if len(sys.argv) >= 2:
-        FindMeGoogleIP(sys.argv[1:]).run()
+    FindMeGoogleIP(sys.argv[1:]).run()
 else:
     print("Usage:")
     print("Find ips in specified domains: findmegoogleip.py kr us")
