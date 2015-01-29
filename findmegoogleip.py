@@ -8,9 +8,10 @@ import threading
 import sys
 import pprint
 import time
-import os
 import socket
 import ssl
+import html.parser
+import re
 
 
 class FindMeGoogleIP:
@@ -24,8 +25,17 @@ class FindMeGoogleIP:
 
     @staticmethod
     def read_domains():
-        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'domains.txt')) as file:
-            return [line.strip() for line in file.readlines() if line.strip()]
+        url = 'http://public-dns.tk/'
+        print('retrieving domain list from http://public-dns.tk/')
+        try:
+            data = urllib.request.urlopen(url).read().decode()
+            dlp = DomainListParser()
+            dlp.feed(data)
+            dlp.domain_list.remove('cn')
+            return dlp.domain_list
+        except IOError:
+            print("Cannot get domain list from %s" % url)
+            exit(1)
 
     @staticmethod
     def run_threads(threads, limit=200):
@@ -103,6 +113,8 @@ class FindMeGoogleIP:
                 if fast_ips:
                     print('|', end="")
                 print('|'.join(slow_ips))
+            else:
+                print()
         else:
             print("No available servers found")
 
@@ -219,6 +231,19 @@ class Ping(threading.Thread):
         loss = result.split('\n')[-3].split(', ')[2].split(' ')[0].replace('%', '')
         trip_time = result.split('\n')[-2].split(' = ')[-1].split('/')[1]
         return {'loss': float(loss), 'time': float(trip_time)}
+
+
+class DomainListParser(html.parser.HTMLParser):
+    def __init__(self):
+        html.parser.HTMLParser.__init__(self)
+        self.domain_list = []
+        self.pattern = re.compile('/nameserver/([a-z][a-z]).html')
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'a':
+            m = self.pattern.match(attrs[0][1])
+            if m:
+                self.domain_list.append(m.group(1))
 
 
 if len(sys.argv) >= 2:
