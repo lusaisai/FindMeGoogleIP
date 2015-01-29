@@ -1,6 +1,6 @@
-FindMeIP
+FindMeGoogleIP
 ========
-Query thousands of dns servers to find the ips of google.
+Query hundreds of thousands of dns servers to find the ips of google.
 
 
 Explain
