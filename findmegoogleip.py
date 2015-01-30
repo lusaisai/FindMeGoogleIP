@@ -18,7 +18,7 @@ class FindMeGoogleIP:
     def __init__(self, locations):
         self.locations = locations
         self.dns_servers = []
-        self.resolved_ips = set()
+        self.resolved_ips = {}
         self.ip_with_time = []
         self.available_ips = []
         self.reachable = []
@@ -26,7 +26,7 @@ class FindMeGoogleIP:
     @staticmethod
     def read_domains():
         url = 'http://public-dns.tk/'
-        print('retrieving domain list from http://public-dns.tk/')
+        print('retrieving domain list from %s' % url)
         try:
             data = urllib.request.urlopen(url).read().decode()
             dlp = DomainListParser()
@@ -67,6 +67,7 @@ class FindMeGoogleIP:
         threads = []
         for server in self.dns_servers:
             threads.append(NsLookup('google.com', server, self.resolved_ips))
+            # threads.append(NsLookup('googlevideo.com', server, self.resolved_ips))
 
         FindMeGoogleIP.run_threads(threads)
 
@@ -88,7 +89,7 @@ class FindMeGoogleIP:
     def check_service(self):
         threads = []
         for ip in self.available_ips:
-            threads.append(ServiceCheck(ip, self.reachable))
+            threads.append(ServiceCheck(ip, self.resolved_ips[ip], self.reachable))
 
         FindMeGoogleIP.run_threads(threads)
 
@@ -133,9 +134,10 @@ class FindMeGoogleIP:
 
 
 class ServiceCheck(threading.Thread):
-    def __init__(self, ip, servicing):
+    def __init__(self, ip, host, servicing):
         threading.Thread.__init__(self)
         self.ip = ip
+        self.host = host
         self.port = 443
         self.lock = None
         self.servicing = servicing
@@ -144,12 +146,12 @@ class ServiceCheck(threading.Thread):
         try:
             print('checking ssl service %s:%s' % (self.ip, self.port))
             socket.setdefaulttimeout(2)
-            conn = ssl.create_default_context().wrap_socket(socket.socket(), server_hostname="www.google.com")
+            conn = ssl.create_default_context().wrap_socket(socket.socket(), server_hostname=self.host)
             conn.connect((self.ip, self.port))
             self.lock.acquire()
             self.servicing.append(self.ip)
             self.lock.release()
-        except (ssl.CertificateError, socket.timeout, ConnectionResetError) as err:
+        except (ssl.CertificateError, ssl.SSLError, socket.timeout, ConnectionError) as err:
             print("error(%s) on connecting %s:%s" % (str(err), self.ip, self.port))
 
 
@@ -191,7 +193,7 @@ class NsLookup(threading.Thread):
             for ip in ips:
                 if ip.startswith('74.') or ip.startswith('173.'):
                     continue
-                self.store.add(ip)
+                self.store[ip] = self.name
             self.lock.release()
         except subprocess.CalledProcessError:
             pass
