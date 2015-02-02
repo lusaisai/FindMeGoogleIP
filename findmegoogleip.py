@@ -93,6 +93,34 @@ class FindMeGoogleIP:
 
         FindMeGoogleIP.run_threads(threads)
 
+    def cleanup_low_quality_ips(self):
+        """
+        If more than half of the ips from the range are unavailable,
+        available ips in the same range are treated as low quality and removed.
+        """
+        reachable = set(self.reachable)
+        success_count = {}
+        fail_count = {}
+        success_rate = {}
+
+        for ip in self.available_ips:
+            prefix = self.get_ip_prefix(ip)
+            if ip in reachable:
+                success_count[prefix] = success_count.get(prefix, 0) + 1
+            else:
+                fail_count[prefix] = fail_count.get(prefix, 0) + 1
+
+        for prefix in success_count.keys():
+            success_rate[prefix] = 100 * success_count[prefix] // (success_count[prefix] + fail_count.get(prefix, 0))
+
+        for ip in self.reachable:
+            if success_rate[self.get_ip_prefix(ip)] < 50:
+                self.reachable.remove(ip)
+
+    @staticmethod
+    def get_ip_prefix(ip):
+        return re.sub('\.[0-9]+$', '', ip)
+
     def show_results(self):
         if self.reachable:
             reachable_ip_with_time = [(ip, rtt) for (ip, rtt) in self.ip_with_time if ip in self.reachable]
@@ -130,6 +158,7 @@ class FindMeGoogleIP:
         self.lookup_ips()
         self.ping()
         self.check_service()
+        self.cleanup_low_quality_ips()
         self.show_results()
 
 
