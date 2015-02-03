@@ -95,13 +95,14 @@ class FindMeGoogleIP:
 
     def cleanup_low_quality_ips(self):
         """
-        If more than half of the ips from the range are unavailable,
-        available ips in the same range are treated as low quality and removed.
+        For ips in the same range, if success_rate does not satisfy a pre-defined threshold,
+        they'll be all treated as low quality and removed.
         """
         reachable = set(self.reachable)
         success_count = {}
         fail_count = {}
         success_rate = {}
+        threshold = 80  # 80%
 
         for ip in self.available_ips:
             prefix = self.get_ip_prefix(ip)
@@ -114,7 +115,7 @@ class FindMeGoogleIP:
             success_rate[prefix] = 100 * success_count[prefix] // (success_count[prefix] + fail_count.get(prefix, 0))
 
         for ip in self.reachable:
-            if success_rate[self.get_ip_prefix(ip)] < 50:
+            if success_rate[self.get_ip_prefix(ip)] < threshold:
                 self.reachable.remove(ip)
 
     @staticmethod
