@@ -114,9 +114,7 @@ class FindMeGoogleIP:
         for prefix in success_count.keys():
             success_rate[prefix] = 100 * success_count[prefix] // (success_count[prefix] + fail_count.get(prefix, 0))
 
-        for ip in self.reachable:
-            if success_rate[self.get_ip_prefix(ip)] < threshold:
-                self.reachable.remove(ip)
+        self.reachable = [ip for ip in self.reachable if success_rate[self.get_ip_prefix(ip)] >= threshold]
 
     @staticmethod
     def get_ip_prefix(ip):
@@ -221,12 +219,20 @@ class NsLookup(threading.Thread):
             ips = self.parse_nslookup_result(output.decode())
             self.lock.acquire()
             for ip in ips:
-                if ip.startswith('74.') or ip.startswith('173.'):
-                    continue
-                self.store[ip] = self.name
+                if not self.is_spf(ip):
+                    self.store[ip] = self.name
             self.lock.release()
         except subprocess.CalledProcessError:
             pass
+
+    @staticmethod
+    def is_spf(ip):
+        ips = {'64.18.', '64.233.', '66.102.', '66.249.', '72.14.', '74.125.', '173.194.', '207.126.', '209.85.',
+               '216.58.', '216.239.'}
+        if re.sub('\.[0-9]+\.[0-9]+$', '.', ip) in ips:
+            return True
+        else:
+            return False
 
     @staticmethod
     def parse_nslookup_result(result):
