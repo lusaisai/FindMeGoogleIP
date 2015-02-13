@@ -28,7 +28,7 @@ class FindMeGoogleIP:
         url = 'http://public-dns.tk/'
         print('retrieving domain list from %s' % url)
         try:
-            data = urllib.request.urlopen(url).read().decode()
+            data = urllib.request.urlopen(url, timeout=5).read().decode()
             dlp = DomainListParser()
             dlp.feed(data)
             dlp.domain_list.remove('cn')
@@ -193,7 +193,7 @@ class GetDnsServer(threading.Thread):
     def run(self):
         try:
             print('retrieving dns servers from %s' % self.url)
-            data = urllib.request.urlopen(self.url).read().decode()
+            data = urllib.request.urlopen(self.url, timeout=5).read().decode()
             servers = json.loads(data)
             self.lock.acquire()
             for server in servers:
