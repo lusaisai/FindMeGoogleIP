@@ -157,7 +157,7 @@ class ServiceCheck(threading.Thread):
     def run(self):
         try:
             print('checking ssl service %s:%s' % (self.ip, self.port))
-            socket.setdefaulttimeout(2)
+            socket.setdefaulttimeout(5)
             conn = ssl.create_default_context().wrap_socket(socket.socket(), server_hostname=self.host)
             conn.connect((self.ip, self.port))
 
