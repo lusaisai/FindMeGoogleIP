@@ -7,6 +7,12 @@ Explain
 -------
 http://public-dns.tk/ has lots of public dns servers, this script queries them and find available ips.
 
+Python Module Dependencies
+-------
+```bash
+pip3 install dnspython3
+```
+
 Usage
 -----
 By default, it looks up google ips in a randomly chosen domain,

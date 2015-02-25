@@ -3,7 +3,6 @@
 import random
 import urllib.request
 import json
-import subprocess
 import threading
 import sys
 import pprint
@@ -12,6 +11,8 @@ import socket
 import ssl
 import html.parser
 import re
+import dns.resolver
+import dns.exception
 
 
 class FindMeGoogleIP:
@@ -19,8 +20,6 @@ class FindMeGoogleIP:
         self.locations = locations
         self.dns_servers = []
         self.resolved_ips = {}
-        self.ip_with_time = []
-        self.available_ips = []
         self.reachable = []
 
     @staticmethod
@@ -71,24 +70,9 @@ class FindMeGoogleIP:
 
         FindMeGoogleIP.run_threads(threads)
 
-    def ping(self):
-        ping_results = {}
-        threads = []
-        for ip in self.resolved_ips:
-            threads.append(Ping(ip, ping_results))
-
-        FindMeGoogleIP.run_threads(threads)
-
-        for k, v in ping_results.items():
-            if v['loss'] == 0:
-                self.ip_with_time.append((k, v['time']))
-
-        self.ip_with_time = sorted(self.ip_with_time, key=lambda x: x[1])
-        self.available_ips = [x[0] for x in self.ip_with_time]
-
     def check_service(self):
         threads = []
-        for ip in self.available_ips:
+        for ip in self.resolved_ips.keys():
             threads.append(ServiceCheck(ip, self.resolved_ips[ip], self.reachable))
 
         FindMeGoogleIP.run_threads(threads)
@@ -98,13 +82,13 @@ class FindMeGoogleIP:
         For ips in the same range, if success_rate does not satisfy a pre-defined threshold,
         they'll be all treated as low quality and removed.
         """
-        reachable = set(self.reachable)
+        reachable = {ip for ip, rtt in self.reachable}
         success_count = {}
         fail_count = {}
         success_rate = {}
         threshold = 80  # 80%
 
-        for ip in self.available_ips:
+        for ip in self.resolved_ips.keys():
             prefix = self.get_ip_prefix(ip)
             if ip in reachable:
                 success_count[prefix] = success_count.get(prefix, 0) + 1
@@ -114,7 +98,8 @@ class FindMeGoogleIP:
         for prefix in success_count.keys():
             success_rate[prefix] = 100 * success_count[prefix] // (success_count[prefix] + fail_count.get(prefix, 0))
 
-        self.reachable = [ip for ip in self.reachable if success_rate[self.get_ip_prefix(ip)] >= threshold]
+        self.reachable = [(ip, rtt) for ip, rtt in self.reachable
+                          if success_rate.get(self.get_ip_prefix(ip), 0) >= threshold]
 
     @staticmethod
     def get_ip_prefix(ip):
@@ -122,14 +107,14 @@ class FindMeGoogleIP:
 
     def show_results(self):
         if self.reachable:
-            reachable_ip_with_time = [(ip, rtt) for (ip, rtt) in self.ip_with_time if ip in self.reachable]
+            reachable_sorted = sorted(self.reachable, key=lambda item: item[1])
 
-            print("%d IPs ordered by delay time:" % len(reachable_ip_with_time))
-            pprint.PrettyPrinter().pprint(reachable_ip_with_time)
+            print("%d IPs ordered by approximate delay time(milliseconds):" % len(reachable_sorted))
+            pprint.PrettyPrinter().pprint(reachable_sorted)
 
             fast_ips = []
             slow_ips = []
-            for ip, rtt in reachable_ip_with_time:
+            for ip, rtt in reachable_sorted:
                 if rtt <= 200:
                     fast_ips.append(ip)
                 else:
@@ -155,7 +140,6 @@ class FindMeGoogleIP:
     def run(self):
         self.get_dns_servers()
         self.lookup_ips()
-        self.ping()
         self.check_service()
         self.cleanup_low_quality_ips()
         self.show_results()
@@ -176,8 +160,14 @@ class ServiceCheck(threading.Thread):
             socket.setdefaulttimeout(2)
             conn = ssl.create_default_context().wrap_socket(socket.socket(), server_hostname=self.host)
             conn.connect((self.ip, self.port))
+
+            start = time.time()
+            socket.create_connection((self.ip, self.port))
+            end = time.time()
+            rtt = int((end-start)*1000)  # milliseconds
+
             self.lock.acquire()
-            self.servicing.append(self.ip)
+            self.servicing.append((self.ip, rtt))
             self.lock.release()
         except (ssl.CertificateError, ssl.SSLError, socket.timeout, ConnectionError) as err:
             print("error(%s) on connecting %s:%s" % (str(err), self.ip, self.port))
@@ -211,18 +201,21 @@ class NsLookup(threading.Thread):
         self.server = server
         self.lock = None
         self.store = store
+        self.resolver = dns.resolver.Resolver()
+        self.resolver.nameservers = [server]
+        self.resolver.lifetime = 5
 
     def run(self):
         try:
             print('looking up %s from %s' % (self.name, self.server))
-            output = subprocess.check_output(["nslookup", self.name, self.server])
-            ips = self.parse_nslookup_result(output.decode())
+            answer = self.resolver.query(self.name)
             self.lock.acquire()
-            for ip in ips:
+            for response in answer:
+                ip = str(response)
                 if not self.is_spf(ip):
                     self.store[ip] = self.name
             self.lock.release()
-        except subprocess.CalledProcessError:
+        except dns.exception.DNSException:
             pass
 
     @staticmethod
@@ -233,42 +226,6 @@ class NsLookup(threading.Thread):
             return True
         else:
             return False
-
-    @staticmethod
-    def parse_nslookup_result(result):
-        """Parse the result of nslookup and return a list of ip"""
-        ips = []
-        lines = result.split('\n')
-        del lines[0]
-        del lines[1]
-        for line in lines:
-            if line.startswith('Address: '):
-                ips.append(line.replace('Address: ', ''))
-        return ips
-
-
-class Ping(threading.Thread):
-    def __init__(self, server, store):
-        threading.Thread.__init__(self)
-        self.server = server
-        self.lock = None
-        self.store = store
-
-    def run(self):
-        try:
-            print('pinging %s' % (self.server,))
-            output = subprocess.check_output(["ping", '-c 5', '-q', self.server])
-            self.lock.acquire()
-            self.store[self.server] = self.parse_ping_result(output.decode())
-            self.lock.release()
-        except subprocess.CalledProcessError:
-            pass
-
-    @staticmethod
-    def parse_ping_result(result):
-        loss = result.split('\n')[-3].split(', ')[2].split(' ')[0].replace('%', '')
-        trip_time = result.split('\n')[-2].split(' = ')[-1].split('/')[1]
-        return {'loss': float(loss), 'time': float(trip_time)}
 
 
 class DomainListParser(html.parser.HTMLParser):
