@@ -29,7 +29,7 @@ class Output:
 class App:
     def __init__(self, master):
         self.top_frame = Frame(master)
-        self.top_frame.pack(side=TOP, padx=5, pady=5, fill=X, expand=YES)
+        self.top_frame.pack(side=TOP, padx=5, pady=5, fill=X, expand=NO)
         self.domain_label = Label(self.top_frame, text='Domain(s):')
         self.domain_label.pack(side=LEFT, fill=X, expand=NO)
         self.domain_text = Entry(self.top_frame)
@@ -40,7 +40,7 @@ class App:
         self.bottom_frame = Frame(master)
         self.bottom_frame.pack(side=BOTTOM, padx=5, pady=5, fill=BOTH, expand=YES)
         self.output_text = ScrolledText(self.bottom_frame, height=25, width=100)
-        self.output_text.pack(fill=BOTH)
+        self.output_text.pack(fill=BOTH, expand=YES)
 
         sys.stdout = Output(self.output_text)
 
