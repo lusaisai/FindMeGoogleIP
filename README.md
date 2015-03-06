@@ -30,6 +30,8 @@ To look up ips in all domains, run this,
 ./findmegoogleip.py all
 ```
 
+A simple ui is created for easier use on Windows, just double click ui.pyw
+
 For a complete list, see below domain map/list or browse this <a href="http://ian.macky.net/pat/map/clickable_world.html" target="_blank">world map</a>.
 
 Domain map and list

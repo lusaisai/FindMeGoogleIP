@@ -5,7 +5,6 @@ import urllib.request
 import json
 import threading
 import sys
-import pprint
 import time
 import socket
 import ssl
@@ -110,32 +109,13 @@ class FindMeGoogleIP:
             reachable_sorted = sorted(self.reachable, key=lambda item: item[1])
 
             print("%d IPs ordered by approximate delay time(milliseconds):" % len(reachable_sorted))
-            pprint.PrettyPrinter().pprint(reachable_sorted)
+            for item in reachable_sorted:
+                print(item)
 
-            fast_ips = []
-            slow_ips = []
-            for ip, rtt in reachable_sorted:
-                if rtt <= 200:
-                    fast_ips.append(ip)
-                else:
-                    slow_ips.append(ip)
             print("%d IPs concatenated:" % len(self.reachable))
-            if fast_ips:
-                FindMeGoogleIP.highlight_print('|'.join(fast_ips))
-            if slow_ips:
-                if fast_ips:
-                    print('|', end="")
-                print('|'.join(slow_ips))
-            else:
-                print()
+            print('|'.join([ip for ip, rtt in reachable_sorted]))
         else:
             print("No available servers found")
-
-    @staticmethod
-    def highlight_print(word):
-        green = '\033[32m'
-        reset = '\033[0m'
-        print(green + word + reset, end="")
 
     def run(self):
         self.get_dns_servers()
@@ -240,12 +220,12 @@ class DomainListParser(html.parser.HTMLParser):
             if m:
                 self.domain_list.append(m.group(1))
 
-
-if len(sys.argv) >= 2:
-    FindMeGoogleIP(sys.argv[1:]).run()
-else:
-    print("Usage:")
-    print("Find ips in specified domains: findmegoogleip.py kr us")
-    print("=" * 50)
-    print("Now running default: find ip from a randomly chosen domain")
-    FindMeGoogleIP([random.choice(FindMeGoogleIP.read_domains())]).run()
+if __name__ == "__main__":
+    if len(sys.argv) >= 2:
+        FindMeGoogleIP(sys.argv[1:]).run()
+    else:
+        print("Usage:")
+        print("Find ips in specified domains: findmegoogleip.py kr us")
+        print("=" * 50)
+        print("Now running default: find ip from a randomly chosen domain")
+        FindMeGoogleIP([random.choice(FindMeGoogleIP.read_domains())]).run()
