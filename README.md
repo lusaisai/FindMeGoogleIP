@@ -1,14 +1,16 @@
 FindMeGoogleIP
 ========
-Query hundreds of thousands of dns servers to find the ips of google.
+Query hundreds of thousands of dns servers to find the google ips.
 
 
 Explain
 -------
-http://public-dns.tk/ has lots of public dns servers, this script queries them and find available ips.
+<a href="http://public-dns.tk/">public-dns.tk</a> has lots of public dns servers, this script queries them and find available ips.
 
-Python Module Dependencies
+Prerequisites
 -------
+* Python3.4 or higher
+* Python module dnspython3, installed by running the following on command line
 ```bash
 pip3 install dnspython3
 ```
@@ -30,7 +32,7 @@ To look up ips in all domains, run this,
 ./findmegoogleip.py all
 ```
 
-A simple ui is created for easier use on Windows, just double click ui.pyw
+A simple ui is available, double click ui.pyw to use it.
 
 For a complete list, see below domain map/list or browse this <a href="http://ian.macky.net/pat/map/clickable_world.html" target="_blank">world map</a>.
 

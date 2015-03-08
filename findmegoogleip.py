@@ -53,7 +53,7 @@ class FindMeGoogleIP:
         """Get the public dns server list from public-dns.tk"""
         if self.locations == ['all']:
             self.locations = FindMeGoogleIP.read_domains()
-        urls = ['http://public-dns.tk/nameserver/%s.json' % location for location in self.locations]
+        urls = ['http://public-dns.tk/nameserver/%s.txt' % location for location in self.locations]
 
         threads = []
         for url in urls:
@@ -65,7 +65,6 @@ class FindMeGoogleIP:
         threads = []
         for server in self.dns_servers:
             threads.append(NsLookup('google.com', server, self.resolved_ips))
-            # threads.append(NsLookup('googlevideo.com', server, self.resolved_ips))
 
         FindMeGoogleIP.run_threads(threads)
 
@@ -106,7 +105,7 @@ class FindMeGoogleIP:
 
     def show_results(self):
         if self.reachable:
-            reachable_sorted = sorted(self.reachable, key=lambda item: item[1])
+            reachable_sorted = sorted(self.reachable, key=lambda x: x[1])
 
             print("%d IPs ordered by approximate delay time(milliseconds):" % len(reachable_sorted))
             for item in reachable_sorted:
@@ -164,14 +163,23 @@ class GetDnsServer(threading.Thread):
         try:
             print('retrieving dns servers from %s' % self.url)
             data = urllib.request.urlopen(self.url, timeout=5).read().decode()
-            servers = json.loads(data)
             self.lock.acquire()
-            for server in servers:
-                if '.' in server['ip']:
-                    self.dns_servers.append(server['ip'])
+            if self.url.endswith('.json'):
+                self.load_json(data)
+            elif self.url.endswith('.txt'):
+                self.load_text(data)
             self.lock.release()
         except IOError:
             print("Cannot get data from %s" % self.url)
+
+    def load_json(self, data):
+        servers = json.loads(data)
+        for server in servers:
+            if '.' in server['ip']:
+                self.dns_servers.append(server['ip'])
+
+    def load_text(self, data):
+        self.dns_servers.extend(re.split('\s+', data.strip()))
 
 
 class NsLookup(threading.Thread):
