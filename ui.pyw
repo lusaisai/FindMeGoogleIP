@@ -5,25 +5,44 @@ from tkinter.scrolledtext import ScrolledText
 import sys
 import re
 import random
-from threading import Thread
+from threading import Thread, Lock
 from findmegoogleip import FindMeGoogleIP
 
 
 class Output:
     """A file-like object used to redirect output to Tkinter text"""
     def __init__(self, output_text):
+        self.lock = Lock()
         self.output_text = output_text
+        self.buffer = []
+        self.buffer_size = 1
+
+    def reset(self):
+        self.buffer = []
+        self.buffer_size = 1
 
     def write(self, text):
+        self.lock.acquire()
         text = text.strip()
-        if len(text) == 0:
-            return
-        else:
-            self.output_text.insert('end', text+"\n")
-            self.output_text.see(END)
+        if len(text) > 0:
+            self.buffer.append(text+"\n")
+
+        # Every time ScrolledText.insert is called, it takes some memory(much more than I would expect).
+        # The buffer size grows linearly to reduce the number of method calls.
+        if len(self.buffer) >= self.buffer_size:
+            self.flush()
+            self.buffer_size += 1
+        self.lock.release()
 
     def flush(self):
-        pass
+        try:
+
+            self.output_text.insert('end', ''.join(self.buffer))
+            self.output_text.see(END)
+            self.buffer.clear()
+
+        except TclError:
+            pass
 
 
 class App:
@@ -48,17 +67,17 @@ class App:
         self.domain_text.bind('<Return>', self.run)
 
     def run(self, event):
+        Thread(target=self.find_me_google_ip).start()
+
+    def find_me_google_ip(self):
+        sys.stdout.reset()
         value = self.domain_text.get()
-
-        def execute():
-            if len(value.strip()) == 0:
-                domains = [random.choice(FindMeGoogleIP.read_domains())]
-            else:
-                domains = re.split('\s+', value)
-            FindMeGoogleIP(domains).run()
-
-        Thread(target=execute).start()
-
+        if len(value.strip()) == 0:
+            domains = [random.choice(FindMeGoogleIP.read_domains())]
+        else:
+            domains = re.split('\s+', value)
+        FindMeGoogleIP(domains).run()
+        sys.stdout.flush()
 
 root = Tk()
 root.title('FindMeGoogleIP')
