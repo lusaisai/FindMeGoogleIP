@@ -36,11 +36,9 @@ class Output:
 
     def flush(self):
         try:
-
             self.output_text.insert('end', ''.join(self.buffer))
             self.output_text.see(END)
             self.buffer.clear()
-
         except TclError:
             pass
 
@@ -65,19 +63,27 @@ class App:
 
         self.run_button.bind('<Button-1>', self.run)
         self.domain_text.bind('<Return>', self.run)
+        self.is_running = False
 
     def run(self, event):
         Thread(target=self.find_me_google_ip).start()
 
     def find_me_google_ip(self):
-        sys.stdout.reset()
-        value = self.domain_text.get()
-        if len(value.strip()) == 0:
-            domains = [random.choice(FindMeGoogleIP.read_domains())]
-        else:
-            domains = re.split('\s+', value)
-        FindMeGoogleIP(domains).run()
-        sys.stdout.flush()
+        if not self.is_running:
+            self.is_running = True
+            sys.stdout.reset()
+            self.run_button.configure(state=DISABLED)
+
+            value = self.domain_text.get()
+            if len(value.strip()) == 0:
+                domains = [random.choice(FindMeGoogleIP.read_domains())]
+            else:
+                domains = re.split('\s+', value)
+            FindMeGoogleIP(domains).run()
+
+            self.run_button.configure(state=ACTIVE)
+            sys.stdout.flush()
+            self.is_running = False
 
 root = Tk()
 root.title('FindMeGoogleIP')
