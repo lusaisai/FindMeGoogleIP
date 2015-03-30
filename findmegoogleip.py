@@ -49,11 +49,11 @@ class FindMeGoogleIP:
         for thread in threads:
             thread.join()
 
-    def get_dns_servers(self):
+    def get_dns_servers(self, source='json'):
         """Get the public dns server list from public-dns.tk"""
         if self.locations == ['all']:
             self.locations = FindMeGoogleIP.read_domains()
-        urls = ['http://public-dns.tk/nameserver/%s.txt' % location for location in self.locations]
+        urls = ['http://public-dns.tk/nameserver/%s.%s' % (location, source) for location in self.locations]
 
         threads = []
         for url in urls:
@@ -118,10 +118,16 @@ class FindMeGoogleIP:
 
     def run(self):
         self.get_dns_servers()
+        self.run_others()
+        if not self.reachable:
+            self.get_dns_servers(source='txt')
+            self.run_others()
+        self.show_results()
+
+    def run_others(self):
         self.lookup_ips()
         self.check_service()
         self.cleanup_low_quality_ips()
-        self.show_results()
 
 
 class ServiceCheck(threading.Thread):
