@@ -1,20 +1,20 @@
 #! /usr/bin/python3.4
 
 import random
-import urllib.request
-import json
 import threading
 import sys
 import time
 import socket
 import ssl
-import html.parser
 import re
 import dns.resolver
 import dns.exception
+import os
 
 
 class FindMeGoogleIP:
+    DNS_SERVERS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'dns_servers')
+
     def __init__(self, locations):
         self.locations = locations
         self.dns_servers = []
@@ -23,17 +23,7 @@ class FindMeGoogleIP:
 
     @staticmethod
     def read_domains():
-        url = 'http://public-dns.tk/'
-        print('retrieving domain list from %s' % url)
-        try:
-            data = urllib.request.urlopen(url, timeout=5).read().decode()
-            dlp = DomainListParser()
-            dlp.feed(data)
-            dlp.domain_list.remove('cn')
-            return dlp.domain_list
-        except IOError:
-            print("Cannot get domain list from %s" % url)
-            exit(1)
+        return [file.replace('.txt', '') for file in os.listdir(FindMeGoogleIP.DNS_SERVERS_DIR)]
 
     @staticmethod
     def run_threads(threads, limit=200):
@@ -49,17 +39,21 @@ class FindMeGoogleIP:
         for thread in threads:
             thread.join()
 
-    def get_dns_servers(self, source='json'):
-        """Get the public dns server list from public-dns.tk"""
+    def get_dns_servers(self):
         if self.locations == ['all']:
-            self.locations = FindMeGoogleIP.read_domains()
-        urls = ['http://public-dns.tk/nameserver/%s.%s' % (location, source) for location in self.locations]
+            self.locations = self.read_domains()
+        files = [os.path.join(self.DNS_SERVERS_DIR, location+'.txt') for location in self.locations]
 
-        threads = []
-        for url in urls:
-            threads.append(GetDnsServer(url, self.dns_servers))
-
-        FindMeGoogleIP.run_threads(threads, 20)
+        try:
+            for file in files:
+                print('read servers from file %s' % file)
+                f = open(file)
+                servers = re.split('\s+', f.read().strip())
+                random.shuffle(servers)
+                self.dns_servers.extend(servers[:200])  # take 200 servers for faster running
+                f.close()
+        except IOError:
+            print("Cannot read dns servers")
 
     def lookup_ips(self):
         threads = []
@@ -118,16 +112,10 @@ class FindMeGoogleIP:
 
     def run(self):
         self.get_dns_servers()
-        self.run_others()
-        if not self.reachable:
-            self.get_dns_servers(source='txt')
-            self.run_others()
-        self.show_results()
-
-    def run_others(self):
         self.lookup_ips()
         self.check_service()
         self.cleanup_low_quality_ips()
+        self.show_results()
 
 
 class ServiceCheck(threading.Thread):
@@ -156,36 +144,6 @@ class ServiceCheck(threading.Thread):
             self.lock.release()
         except (ssl.CertificateError, ssl.SSLError, socket.timeout, ConnectionError) as err:
             print("error(%s) on connecting %s:%s" % (str(err), self.ip, self.port))
-
-
-class GetDnsServer(threading.Thread):
-    def __init__(self, url, dns_servers):
-        threading.Thread.__init__(self)
-        self.url = url
-        self.lock = None
-        self.dns_servers = dns_servers
-
-    def run(self):
-        try:
-            print('retrieving dns servers from %s' % self.url)
-            data = urllib.request.urlopen(self.url, timeout=5).read().decode()
-            self.lock.acquire()
-            if self.url.endswith('.json'):
-                self.load_json(data)
-            elif self.url.endswith('.txt'):
-                self.load_text(data)
-            self.lock.release()
-        except IOError:
-            print("Cannot get data from %s" % self.url)
-
-    def load_json(self, data):
-        servers = json.loads(data)
-        for server in servers:
-            if '.' in server['ip']:
-                self.dns_servers.append(server['ip'])
-
-    def load_text(self, data):
-        self.dns_servers.extend(re.split('\s+', data.strip()))
 
 
 class NsLookup(threading.Thread):
@@ -222,24 +180,13 @@ class NsLookup(threading.Thread):
             return False
 
 
-class DomainListParser(html.parser.HTMLParser):
-    def __init__(self):
-        html.parser.HTMLParser.__init__(self)
-        self.domain_list = []
-        self.pattern = re.compile('/nameserver/([a-z][a-z]).html')
-
-    def handle_starttag(self, tag, attrs):
-        if tag == 'a':
-            m = self.pattern.match(attrs[0][1])
-            if m:
-                self.domain_list.append(m.group(1))
-
 if __name__ == "__main__":
     if len(sys.argv) >= 2:
         FindMeGoogleIP(sys.argv[1:]).run()
     else:
+        domain = [random.choice(FindMeGoogleIP.read_domains())]
         print("Usage:")
         print("Find ips in specified domains: findmegoogleip.py kr us")
         print("=" * 50)
-        print("Now running default: find ip from a randomly chosen domain")
-        FindMeGoogleIP([random.choice(FindMeGoogleIP.read_domains())]).run()
+        print("Now running default: find ip from a randomly chosen domain: %s" % domain[0])
+        FindMeGoogleIP(domain).run()
