@@ -10,6 +10,7 @@ import re
 import dns.resolver
 import dns.exception
 import os
+import urllib.request
 
 
 class FindMeGoogleIP:
@@ -116,6 +117,32 @@ class FindMeGoogleIP:
         self.check_service()
         self.cleanup_low_quality_ips()
         self.show_results()
+
+    @staticmethod
+    def update_dns_files():
+        threads = []
+        for location in FindMeGoogleIP.read_domains():
+            threads.append(DNSServerFileDownload(location))
+        FindMeGoogleIP.run_threads(threads)
+        print('updated')
+
+
+class DNSServerFileDownload(threading.Thread):
+    def __init__(self, location):
+        threading.Thread.__init__(self)
+        self.domain = location
+        self.url = "http://public-dns.tk/nameserver/%s.txt" % location
+        self.file = os.path.join(FindMeGoogleIP.DNS_SERVERS_DIR, '%s.txt' % location)
+        self.lock = None
+
+    def run(self):
+        try:
+            print('downloading file %s' % self.url)
+            data = urllib.request.urlopen(self.url).read().decode()
+            f = open(self.file, mode='w')
+            f.write(data)
+        except IOError:
+            print('cannot update file %s' % self.file)
 
 
 class ServiceCheck(threading.Thread):
