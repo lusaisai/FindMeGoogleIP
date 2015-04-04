@@ -123,8 +123,8 @@ class FindMeGoogleIP:
         threads = []
         for location in FindMeGoogleIP.read_domains():
             threads.append(DNSServerFileDownload(location))
-        FindMeGoogleIP.run_threads(threads)
-        print('updated')
+        FindMeGoogleIP.run_threads(threads, 100)
+        print('finished')
 
 
 class DNSServerFileDownload(threading.Thread):
@@ -138,11 +138,11 @@ class DNSServerFileDownload(threading.Thread):
     def run(self):
         try:
             print('downloading file %s' % self.url)
-            data = urllib.request.urlopen(self.url).read().decode()
+            data = urllib.request.urlopen(self.url, timeout=5).read().decode()
             f = open(self.file, mode='w')
             f.write(data)
-        except IOError:
-            print('cannot update file %s' % self.file)
+        except IOError as err:
+            print('cannot(%s) update file %s' % (str(err), self.file))
 
 
 class ServiceCheck(threading.Thread):

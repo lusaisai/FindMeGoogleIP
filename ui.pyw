@@ -56,6 +56,8 @@ class App:
         self.run_button.pack(side=LEFT, fill=X, expand=NO)
         self.save_button = Button(self.top_frame, text='Save')
         self.save_button.pack(side=LEFT, padx=5, fill=X, expand=NO)
+        self.update_button = Button(self.top_frame, text='Update')
+        self.update_button.pack(side=LEFT, fill=X, expand=NO)
 
         self.bottom_frame = Frame(master)
         self.bottom_frame.pack(side=BOTTOM, padx=5, pady=5, fill=BOTH, expand=YES)
@@ -67,10 +69,27 @@ class App:
         self.run_button.bind('<Button-1>', self.run)
         self.domain_text.bind('<Return>', self.run)
         self.save_button.bind('<Button-1>', self.save)
+        self.update_button.bind('<Button-1>', self.update)
         self.is_running = False
+        self.is_updating = False
 
     def save(self, event):
         Thread(target=self.save_log).start()
+
+    def update(self, event):
+        Thread(target=self.update_dns_files).start()
+
+    def update_dns_files(self):
+        if not self.is_updating:
+            self.is_updating = True
+            sys.stdout.reset()
+            self.update_button.configure(state=DISABLED)
+
+            FindMeGoogleIP.update_dns_files()
+
+            self.update_button.configure(state=ACTIVE)
+            sys.stdout.flush()
+            self.is_updating = False
 
     def save_log(self):
         f = asksaveasfile(mode='w', defaultextension='.txt', initialfile='findmegoogleip_log.txt')
