@@ -49,9 +49,9 @@ class FindMeGoogleIP:
             for file in files:
                 print('read servers from file %s' % file)
                 f = open(file)
-                servers = re.split('\s+', f.read().strip())
-                servers.remove('')
-                if servers:
+                data = f.read().strip()
+                if data:
+                    servers = re.split('\s+', data)
                     random.shuffle(servers)
                     self.dns_servers.extend(servers[:200])  # take 200 servers for faster running
                 f.close()
