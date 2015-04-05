@@ -33,12 +33,13 @@ To look up ips in all domains, run this,
 ```
 
 A simple ui is available, double click ui.pyw to use it.
+![ui screenshot](https://github.com/lusaisai/FindMeGoogleIP/blob/doc/ui.png "ui screenshot")
 
 For a complete list, see below domain map/list or browse this <a href="http://ian.macky.net/pat/map/clickable_world.html" target="_blank">world map</a>.
 
 Domain map and list
 -------------------
-![domain map](https://raw.githubusercontent.com/lusaisai/FindMeGoogleIP/master/domain_map.png "domain map")
+![domain map](https://github.com/lusaisai/FindMeGoogleIP/blob/doc/domain_map.png "domain map")
 
 
 ```
