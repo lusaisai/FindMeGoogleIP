@@ -32,6 +32,11 @@ To look up ips in all domains, run this,
 ./findmegoogleip.py all
 ```
 
+To update local dns server files, run this,
+```bash
+./findmegoogleip.py update
+```
+
 A simple ui is available, double click ui.pyw to use it.
 ![ui screenshot](https://github.com/lusaisai/FindMeGoogleIP/blob/doc/ui.png "ui screenshot")
 
