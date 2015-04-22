@@ -211,7 +211,10 @@ class NsLookup(threading.Thread):
 
 if __name__ == "__main__":
     if len(sys.argv) >= 2:
-        FindMeGoogleIP(sys.argv[1:]).run()
+        if sys.argv[1] == 'update':
+            FindMeGoogleIP.update_dns_files()
+        else:
+            FindMeGoogleIP(sys.argv[1:]).run()
     else:
         domain = [random.choice(FindMeGoogleIP.read_domains())]
         print("Usage:")
