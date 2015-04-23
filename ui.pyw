@@ -21,6 +21,7 @@ class Output:
     def reset(self):
         self.buffer = []
         self.buffer_size = 1
+        self.output_text.delete(1.0, END)
 
     def write(self, text):
         self.lock.acquire()
