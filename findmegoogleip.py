@@ -47,7 +47,7 @@ class FindMeGoogleIP:
 
         try:
             for file in files:
-                print('read servers from file %s' % file)
+                print('reading servers from file %s' % file)
                 f = open(file)
                 data = f.read().strip()
                 if data:
@@ -196,7 +196,7 @@ class NsLookup(threading.Thread):
                 if not self.is_spf(ip):
                     self.store[ip] = self.name
             self.lock.release()
-        except dns.exception.DNSException:
+        except (dns.exception.DNSException, ValueError):
             pass
 
     @staticmethod
