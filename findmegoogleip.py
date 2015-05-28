@@ -117,7 +117,7 @@ class FindMeGoogleIP:
         self.get_dns_servers()
         self.lookup_ips()
         self.check_service()
-        self.cleanup_low_quality_ips()
+        # self.cleanup_low_quality_ips()
         self.show_results()
 
     @staticmethod
