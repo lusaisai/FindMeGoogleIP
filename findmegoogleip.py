@@ -27,7 +27,7 @@ class FindMeGoogleIP:
         return [file.replace('.txt', '') for file in os.listdir(FindMeGoogleIP.DNS_SERVERS_DIR)]
 
     @staticmethod
-    def run_threads(threads, limit=200):
+    def run_threads(threads, limit=500):
         """A general way to run multiple threads"""
         lock = threading.Lock()
         for thread in threads:
@@ -43,17 +43,18 @@ class FindMeGoogleIP:
     def get_dns_servers(self):
         if self.locations == ['all']:
             self.locations = self.read_domains()
-        files = [os.path.join(self.DNS_SERVERS_DIR, location+'.txt') for location in self.locations]
 
         try:
-            for file in files:
+            for location in self.locations:
+                file = os.path.join(self.DNS_SERVERS_DIR, location+'.txt')
                 print('reading servers from file %s' % file)
                 f = open(file)
                 data = f.read().strip()
                 if data:
                     servers = re.split('\s+', data)
                     random.shuffle(servers)
-                    self.dns_servers.extend(servers[:200])  # take 200 servers for faster running
+                    for server in servers[:1000]:
+                        self.dns_servers.append((server, location))
                 f.close()
         except IOError:
             print("Cannot read dns servers")
@@ -68,7 +69,7 @@ class FindMeGoogleIP:
     def check_service(self):
         threads = []
         for ip in self.resolved_ips.keys():
-            threads.append(ServiceCheck(ip, self.resolved_ips[ip], self.reachable))
+            threads.append(ServiceCheck(ip, self.resolved_ips[ip][0], self.reachable))
 
         FindMeGoogleIP.run_threads(threads)
 
@@ -106,7 +107,7 @@ class FindMeGoogleIP:
 
             print("%d IPs ordered by approximate delay time(milliseconds):" % len(reachable_sorted))
             for item in reachable_sorted:
-                print(item)
+                print((item[0], item[1], self.resolved_ips[item[0]][1]))
 
             print("%d IPs concatenated:" % len(self.reachable))
             print('|'.join([ip for ip, rtt in reachable_sorted]))
@@ -125,7 +126,7 @@ class FindMeGoogleIP:
         threads = []
         for location in FindMeGoogleIP.read_domains():
             threads.append(DNSServerFileDownload(location))
-        FindMeGoogleIP.run_threads(threads, 100)
+        FindMeGoogleIP.run_threads(threads, 50)
         print('finished')
 
 
@@ -171,7 +172,7 @@ class ServiceCheck(threading.Thread):
             self.lock.acquire()
             self.servicing.append((self.ip, rtt))
             self.lock.release()
-        except (ssl.CertificateError, ssl.SSLError, socket.timeout, ConnectionError) as err:
+        except (ssl.CertificateError, ssl.SSLError, socket.timeout, ConnectionError, OSError) as err:
             print("error(%s) on connecting %s:%s" % (str(err), self.ip, self.port))
 
 
@@ -183,7 +184,7 @@ class NsLookup(threading.Thread):
         self.lock = None
         self.store = store
         self.resolver = dns.resolver.Resolver()
-        self.resolver.nameservers = [server]
+        self.resolver.nameservers = [self.server[0]]
         self.resolver.lifetime = 5
 
     def run(self):
@@ -194,7 +195,7 @@ class NsLookup(threading.Thread):
             for response in answer:
                 ip = str(response)
                 if not self.is_spf(ip):
-                    self.store[ip] = self.name
+                    self.store[ip] = (self.name, self.server[1])
             self.lock.release()
         except (dns.exception.DNSException, ValueError):
             pass
