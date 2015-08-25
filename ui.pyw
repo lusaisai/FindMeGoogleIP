@@ -1,8 +1,7 @@
-#! /usr/bin/python3.4
+#! /usr/bin/python2.7
 
-from tkinter import *
-from tkinter.filedialog import asksaveasfile
-from tkinter.scrolledtext import ScrolledText
+from Tkinter import *
+from ScrolledText import ScrolledText
 import sys
 import re
 import random
@@ -40,7 +39,7 @@ class Output:
         try:
             self.output_text.insert('end', ''.join(self.buffer))
             self.output_text.see(END)
-            self.buffer.clear()
+            del self.buffer[:]
         except TclError:
             pass
 
@@ -55,10 +54,8 @@ class App:
         self.domain_text.pack(side=LEFT, padx=10, fill=X, expand=YES)
         self.run_button = Button(self.top_frame, text='Run')
         self.run_button.pack(side=LEFT, fill=X, expand=NO)
-        self.save_button = Button(self.top_frame, text='Save')
-        self.save_button.pack(side=LEFT, padx=5, fill=X, expand=NO)
         self.update_button = Button(self.top_frame, text='Update')
-        self.update_button.pack(side=LEFT, fill=X, expand=NO)
+        self.update_button.pack(side=LEFT, padx=5, fill=X, expand=NO)
 
         self.bottom_frame = Frame(master)
         self.bottom_frame.pack(side=BOTTOM, padx=5, pady=5, fill=BOTH, expand=YES)
@@ -69,13 +66,9 @@ class App:
 
         self.run_button.bind('<Button-1>', self.run)
         self.domain_text.bind('<Return>', self.run)
-        self.save_button.bind('<Button-1>', self.save)
         self.update_button.bind('<Button-1>', self.update)
         self.is_running = False
         self.is_updating = False
-
-    def save(self, event):
-        Thread(target=self.save_log).start()
 
     def update(self, event):
         Thread(target=self.update_dns_files).start()
@@ -91,12 +84,6 @@ class App:
             self.update_button.configure(state=ACTIVE)
             sys.stdout.flush()
             self.is_updating = False
-
-    def save_log(self):
-        f = asksaveasfile(mode='w', defaultextension='.txt', initialfile='findmegoogleip_log.txt')
-        if f:
-            f.write(str(self.output_text.get(1.0, END)))
-            f.close()
 
     def run(self, event):
         Thread(target=self.find_me_google_ip).start()

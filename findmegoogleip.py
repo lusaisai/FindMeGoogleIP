@@ -1,4 +1,4 @@
-#! /usr/bin/python3.4
+#! /usr/bin/python2.7
 
 import random
 import threading
@@ -10,7 +10,7 @@ import re
 import dns.resolver
 import dns.exception
 import os
-import urllib.request
+import urllib2
 
 
 class FindMeGoogleIP:
@@ -24,7 +24,7 @@ class FindMeGoogleIP:
 
     @staticmethod
     def read_domains():
-        return [file.replace('.txt', '') for file in os.listdir(FindMeGoogleIP.DNS_SERVERS_DIR)]
+        return [f.replace('.txt', '') for f in os.listdir(FindMeGoogleIP.DNS_SERVERS_DIR)]
 
     @staticmethod
     def run_threads(threads, limit=500):
@@ -46,9 +46,9 @@ class FindMeGoogleIP:
 
         try:
             for location in self.locations:
-                file = os.path.join(self.DNS_SERVERS_DIR, location+'.txt')
-                print('reading servers from file %s' % file)
-                f = open(file)
+                f = os.path.join(self.DNS_SERVERS_DIR, location+'.txt')
+                print('reading servers from file %s' % f)
+                f = open(f)
                 data = f.read().strip()
                 if data:
                     servers = re.split('\s+', data)
@@ -107,7 +107,7 @@ class FindMeGoogleIP:
 
             print("%d IPs ordered by approximate delay time(milliseconds):" % len(reachable_sorted))
             for item in reachable_sorted:
-                print((item[0], item[1], self.resolved_ips[item[0]][1]))
+                print(item[0], item[1], self.resolved_ips[item[0]][1])
 
             print("%d IPs concatenated:" % len(self.reachable))
             print('|'.join([ip for ip, rtt in reachable_sorted]))
@@ -141,7 +141,7 @@ class DNSServerFileDownload(threading.Thread):
     def run(self):
         try:
             print('downloading file %s' % self.url)
-            data = urllib.request.urlopen(self.url, timeout=5).read().decode()
+            data = urllib2.urlopen(self.url, timeout=5).read().decode()
             f = open(self.file, mode='w')
             f.write(data)
         except IOError as err:
@@ -172,7 +172,7 @@ class ServiceCheck(threading.Thread):
             self.lock.acquire()
             self.servicing.append((self.ip, rtt))
             self.lock.release()
-        except (ssl.CertificateError, ssl.SSLError, socket.timeout, ConnectionError, OSError) as err:
+        except (ssl.CertificateError, ssl.SSLError, socket.timeout, OSError) as err:
             print("error(%s) on connecting %s:%s" % (str(err), self.ip, self.port))
 
 

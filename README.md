@@ -9,10 +9,10 @@ Explain
 
 Prerequisites
 -------
-* Python3.4 or higher
-* Python module dnspython3, installed by running the following on command line
+* Python2.7.9 or higher
+* Python module dnspython, installed by running the following on command line
 ```bash
-pip3 install dnspython3
+pip install dnspython
 ```
 
 Usage
