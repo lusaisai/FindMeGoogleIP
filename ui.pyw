@@ -1,4 +1,4 @@
-#! /usr/bin/python3.4
+#! /usr/bin/python3
 
 from tkinter import *
 from tkinter.filedialog import asksaveasfile
@@ -86,7 +86,7 @@ class App:
             sys.stdout.reset()
             self.update_button.configure(state=DISABLED)
 
-            FindMeGoogleIP.update_dns_files()
+            FindMeGoogleIP([]).update_dns_files()
 
             self.update_button.configure(state=ACTIVE)
             sys.stdout.flush()

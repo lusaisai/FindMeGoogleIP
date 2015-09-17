@@ -1,4 +1,4 @@
-#! /usr/bin/python3.4
+#! /usr/bin/python3
 
 import random
 import threading
@@ -11,24 +11,29 @@ import dns.resolver
 import dns.exception
 import os
 import urllib.request
+import configparser
 
 
 class FindMeGoogleIP:
-    DNS_SERVERS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'dns_servers')
+    BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+    DNS_SERVERS_DIR = os.path.join(BASE_DIR, 'dns_servers')
 
     def __init__(self, locations):
         self.locations = locations
         self.dns_servers = []
         self.resolved_ips = {}
         self.reachable = []
+        self.config = configparser.ConfigParser()
+        self.config.read(os.path.join(FindMeGoogleIP.BASE_DIR, 'config.ini'))
 
     @staticmethod
     def read_domains():
         return [file.replace('.txt', '') for file in os.listdir(FindMeGoogleIP.DNS_SERVERS_DIR)]
 
-    @staticmethod
-    def run_threads(threads, limit=500):
+    def run_threads(self, threads, limit=None):
         """A general way to run multiple threads"""
+        if not limit:
+            limit = self.config['default'].getint('threads', 200)
         lock = threading.Lock()
         for thread in threads:
             thread.lock = lock
@@ -53,7 +58,8 @@ class FindMeGoogleIP:
                 if data:
                     servers = re.split('\s+', data)
                     random.shuffle(servers)
-                    for server in servers[:1000]:
+
+                    for server in servers[:self.config['default'].getint('servers', 200)]:
                         self.dns_servers.append((server, location))
                 f.close()
         except IOError:
@@ -64,14 +70,14 @@ class FindMeGoogleIP:
         for server in self.dns_servers:
             threads.append(NsLookup('google.com', server, self.resolved_ips))
 
-        FindMeGoogleIP.run_threads(threads)
+        self.run_threads(threads)
 
     def check_service(self):
         threads = []
         for ip in self.resolved_ips.keys():
             threads.append(ServiceCheck(ip, self.resolved_ips[ip][0], self.reachable))
 
-        FindMeGoogleIP.run_threads(threads)
+        self.run_threads(threads)
 
     def cleanup_low_quality_ips(self):
         """
@@ -121,12 +127,11 @@ class FindMeGoogleIP:
         # self.cleanup_low_quality_ips()
         self.show_results()
 
-    @staticmethod
-    def update_dns_files():
+    def update_dns_files(self):
         threads = []
         for location in FindMeGoogleIP.read_domains():
             threads.append(DNSServerFileDownload(location))
-        FindMeGoogleIP.run_threads(threads, 50)
+        self.run_threads(threads, 50)
         print('finished')
 
 
@@ -213,7 +218,7 @@ class NsLookup(threading.Thread):
 if __name__ == "__main__":
     if len(sys.argv) >= 2:
         if sys.argv[1] == 'update':
-            FindMeGoogleIP.update_dns_files()
+            FindMeGoogleIP([]).update_dns_files()
         else:
             FindMeGoogleIP(sys.argv[1:]).run()
     else:
