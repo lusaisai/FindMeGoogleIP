@@ -63,6 +63,7 @@ class App:
         self.bottom_frame = Frame(master)
         self.bottom_frame.pack(side=BOTTOM, padx=5, pady=5, fill=BOTH, expand=YES)
         self.output_text = ScrolledText(self.bottom_frame, height=25, width=100)
+        self.output_text.config(font="consolas")
         self.output_text.pack(fill=BOTH, expand=YES)
 
         sys.stdout = Output(self.output_text)
