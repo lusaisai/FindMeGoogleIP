@@ -58,8 +58,8 @@ class FindMeGoogleIP:
                 if data:
                     servers = re.split('\s+', data)
                     random.shuffle(servers)
-
-                    for server in servers[:self.config['default'].getint('servers', 200)]:
+                    server_limit = slice(self.config['default'].getint('servers', 200))
+                    for server in servers[server_limit]:
                         self.dns_servers.append((server, location))
                 f.close()
         except IOError:

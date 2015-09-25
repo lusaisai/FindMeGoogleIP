@@ -79,7 +79,7 @@ class App:
         Thread(target=self.save_log).start()
 
     def update(self, event):
-        Thread(target=self.update_dns_files).start()
+        Thread(target=self.update_dns_files, daemon=True).start()
 
     def update_dns_files(self):
         if not self.is_updating:
@@ -100,7 +100,7 @@ class App:
             f.close()
 
     def run(self, event):
-        Thread(target=self.find_me_google_ip).start()
+        Thread(target=self.find_me_google_ip, daemon=True).start()
 
     def find_me_google_ip(self):
         if not self.is_running:
