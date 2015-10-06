@@ -3,11 +3,11 @@
 from tkinter import *
 from tkinter.filedialog import asksaveasfile
 from tkinter.scrolledtext import ScrolledText
-import sys
 import re
 import random
 from threading import Thread, Lock
 from findmegoogleip import FindMeGoogleIP
+import logging
 
 
 class Output:
@@ -66,7 +66,7 @@ class App:
         self.output_text.config(font="consolas")
         self.output_text.pack(fill=BOTH, expand=YES)
 
-        sys.stdout = Output(self.output_text)
+        self.output_stream = Output(self.output_text)
 
         self.run_button.bind('<Button-1>', self.run)
         self.domain_text.bind('<Return>', self.run)
@@ -84,13 +84,13 @@ class App:
     def update_dns_files(self):
         if not self.is_updating:
             self.is_updating = True
-            sys.stdout.reset()
+            self.output_stream.reset()
             self.update_button.configure(state=DISABLED)
 
             FindMeGoogleIP([]).update_dns_files()
 
             self.update_button.configure(state=ACTIVE)
-            sys.stdout.flush()
+            self.output_stream.flush()
             self.is_updating = False
 
     def save_log(self):
@@ -105,7 +105,7 @@ class App:
     def find_me_google_ip(self):
         if not self.is_running:
             self.is_running = True
-            sys.stdout.reset()
+            self.output_stream.reset()
             self.run_button.configure(state=DISABLED)
 
             value = self.domain_text.get()
@@ -116,10 +116,12 @@ class App:
             FindMeGoogleIP(domains).run()
 
             self.run_button.configure(state=ACTIVE)
-            sys.stdout.flush()
+            self.output_stream.flush()
             self.is_running = False
+
 
 root = Tk()
 root.title('FindMeGoogleIP')
 app = App(root)
+logging.basicConfig(format='%(message)s', stream=app.output_stream, level=logging.INFO)
 root.mainloop()

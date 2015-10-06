@@ -12,6 +12,7 @@ import dns.exception
 import os
 import urllib.request
 import configparser
+import logging
 
 
 class FindMeGoogleIP:
@@ -52,31 +53,24 @@ class FindMeGoogleIP:
         try:
             for location in self.locations:
                 file = os.path.join(self.DNS_SERVERS_DIR, location+'.txt')
-                print('reading servers from file %s' % file)
-                f = open(file)
-                data = f.read().strip()
-                if data:
-                    servers = re.split('\s+', data)
-                    random.shuffle(servers)
-                    server_limit = slice(self.config['default'].getint('servers', 200))
-                    for server in servers[server_limit]:
-                        self.dns_servers.append((server, location))
-                f.close()
+                logging.info('reading servers from file %s' % file)
+                with open(file) as f:
+                    data = f.read().strip()
+                    if data:
+                        servers = re.split('\s+', data)
+                        random.shuffle(servers)
+                        server_limit = slice(self.config['default'].getint('servers', 200))
+                        for server in servers[server_limit]:
+                            self.dns_servers.append((server, location))
         except IOError:
-            print("Cannot read dns servers")
+            logging.error("Cannot read dns servers")
 
     def lookup_ips(self):
-        threads = []
-        for server in self.dns_servers:
-            threads.append(NsLookup('google.com', server, self.resolved_ips))
-
+        threads = [NsLookup('google.com', server, self.resolved_ips) for server in self.dns_servers]
         self.run_threads(threads)
 
     def check_service(self):
-        threads = []
-        for ip in self.resolved_ips.keys():
-            threads.append(ServiceCheck(ip, self.resolved_ips[ip][0], self.reachable))
-
+        threads = [ServiceCheck(ip, self.resolved_ips[ip][0], self.reachable) for ip in self.resolved_ips.keys()]
         self.run_threads(threads)
 
     def cleanup_low_quality_ips(self):
@@ -111,14 +105,14 @@ class FindMeGoogleIP:
         if self.reachable:
             reachable_sorted = sorted(self.reachable, key=lambda x: x[1])
 
-            print("%d IPs ordered by approximate delay time(milliseconds):" % len(reachable_sorted))
+            logging.info("%d IPs ordered by approximate delay time(milliseconds):" % len(reachable_sorted))
             for item in reachable_sorted:
-                print((item[0], item[1], self.resolved_ips[item[0]][1]))
+                logging.info((item[0], item[1], self.resolved_ips[item[0]][1]))
 
-            print("%d IPs concatenated:" % len(self.reachable))
-            print('|'.join([ip for ip, rtt in reachable_sorted]))
+            logging.info("%d IPs concatenated:" % len(self.reachable))
+            logging.info('|'.join(ip for ip, rtt in reachable_sorted))
         else:
-            print("No available servers found")
+            logging.info("No available servers found")
 
     def run(self):
         self.get_dns_servers()
@@ -128,11 +122,9 @@ class FindMeGoogleIP:
         self.show_results()
 
     def update_dns_files(self):
-        threads = []
-        for location in FindMeGoogleIP.read_domains():
-            threads.append(DNSServerFileDownload(location))
+        threads = [DNSServerFileDownload(location) for location in FindMeGoogleIP.read_domains()]
         self.run_threads(threads, 50)
-        print('finished')
+        logging.info('finished')
 
 
 class DNSServerFileDownload(threading.Thread):
@@ -145,12 +137,12 @@ class DNSServerFileDownload(threading.Thread):
 
     def run(self):
         try:
-            print('downloading file %s' % self.url)
+            logging.info('downloading file %s' % self.url)
             data = urllib.request.urlopen(self.url, timeout=5).read().decode()
-            f = open(self.file, mode='w')
-            f.write(data)
+            with open(self.file, mode='w') as f:
+                f.write(data)
         except IOError as err:
-            print('cannot(%s) update file %s' % (str(err), self.file))
+            logging.error('cannot(%s) update file %s' % (str(err), self.file))
 
 
 class ServiceCheck(threading.Thread):
@@ -164,7 +156,7 @@ class ServiceCheck(threading.Thread):
 
     def run(self):
         try:
-            print('checking ssl service %s:%s' % (self.ip, self.port))
+            logging.info('checking ssl service %s:%s' % (self.ip, self.port))
             socket.setdefaulttimeout(5)
             conn = ssl.create_default_context().wrap_socket(socket.socket(), server_hostname=self.host)
             conn.connect((self.ip, self.port))
@@ -174,11 +166,11 @@ class ServiceCheck(threading.Thread):
             end = time.time()
             rtt = int((end-start)*1000)  # milliseconds
 
-            self.lock.acquire()
-            self.servicing.append((self.ip, rtt))
-            self.lock.release()
+            with self.lock:
+                self.servicing.append((self.ip, rtt))
+
         except (ssl.CertificateError, ssl.SSLError, socket.timeout, ConnectionError, OSError) as err:
-            print("error(%s) on connecting %s:%s" % (str(err), self.ip, self.port))
+            logging.error("error(%s) on connecting %s:%s" % (str(err), self.ip, self.port))
 
 
 class NsLookup(threading.Thread):
@@ -194,14 +186,13 @@ class NsLookup(threading.Thread):
 
     def run(self):
         try:
-            print('looking up %s from %s' % (self.name, self.server))
+            logging.info('looking up %s from %s' % (self.name, self.server))
             answer = self.resolver.query(self.name)
-            self.lock.acquire()
-            for response in answer:
-                ip = str(response)
-                if not self.is_spf(ip):
-                    self.store[ip] = (self.name, self.server[1])
-            self.lock.release()
+            with self.lock:
+                for response in answer:
+                    ip = str(response)
+                    if not self.is_spf(ip):
+                        self.store[ip] = (self.name, self.server[1])
         except (dns.exception.DNSException, ValueError):
             pass
 
@@ -216,6 +207,7 @@ class NsLookup(threading.Thread):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(format='%(message)s', level=logging.INFO)
     if len(sys.argv) >= 2:
         if sys.argv[1] == 'update':
             FindMeGoogleIP([]).update_dns_files()
@@ -223,8 +215,8 @@ if __name__ == "__main__":
             FindMeGoogleIP(sys.argv[1:]).run()
     else:
         domain = [random.choice(FindMeGoogleIP.read_domains())]
-        print("Usage:")
-        print("Find ips in specified domains: findmegoogleip.py kr us")
-        print("=" * 50)
-        print("Now running default: find ip from a randomly chosen domain: %s" % domain[0])
+        logging.info("Usage:")
+        logging.info("Find ips in specified domains: findmegoogleip.py kr us")
+        logging.info("=" * 50)
+        logging.info("Now running default: find ip from a randomly chosen domain: %s" % domain[0])
         FindMeGoogleIP(domain).run()
