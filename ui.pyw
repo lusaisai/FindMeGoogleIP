@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 from tkinter import *
+from tkinter import ttk
 from tkinter.filedialog import asksaveasfile
 from tkinter.scrolledtext import ScrolledText
 import re
@@ -51,7 +52,8 @@ class App:
         self.top_frame.pack(side=TOP, padx=5, pady=5, fill=X, expand=NO)
         self.domain_label = Label(self.top_frame, text='Domain(s):')
         self.domain_label.pack(side=LEFT, fill=X, expand=NO)
-        self.domain_text = Entry(self.top_frame)
+        domain_list = ('kr', 'kr la vn th kh my ph sg id ru')
+        self.domain_text = ttk.Combobox(self.top_frame, values=domain_list)
         self.domain_text.pack(side=LEFT, padx=10, fill=X, expand=YES)
         self.run_button = Button(self.top_frame, text='Run')
         self.run_button.pack(side=LEFT, fill=X, expand=NO)
