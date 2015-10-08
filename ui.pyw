@@ -33,17 +33,20 @@ class Output:
         # Every time ScrolledText.insert is called, it takes some memory(much more than I would expect).
         # The buffer size grows linearly to reduce the number of method calls.
         if len(self.buffer) >= self.buffer_size:
-            self.flush()
+            self.real_flush()
             self.buffer_size += 1
         self.lock.release()
 
-    def flush(self):
+    def real_flush(self):
         try:
             self.output_text.insert('end', ''.join(self.buffer))
             self.output_text.see(END)
             self.buffer.clear()
         except TclError:
             pass
+
+    def flush(self):
+        pass
 
 
 class App:
@@ -52,7 +55,7 @@ class App:
         self.top_frame.pack(side=TOP, padx=5, pady=5, fill=X, expand=NO)
         self.domain_label = Label(self.top_frame, text='Domain(s):')
         self.domain_label.pack(side=LEFT, fill=X, expand=NO)
-        domain_list = ('kr', 'kr la vn th kh my ph sg id ru')
+        domain_list = ('kr', 'kr la vn th kh my ph sg id ru', 'all')
         self.domain_text = ttk.Combobox(self.top_frame, values=domain_list)
         self.domain_text.pack(side=LEFT, padx=10, fill=X, expand=YES)
         self.run_button = Button(self.top_frame, text='Run')
@@ -92,7 +95,7 @@ class App:
             FindMeGoogleIP([]).update_dns_files()
 
             self.update_button.configure(state=ACTIVE)
-            self.output_stream.flush()
+            self.output_stream.real_flush()
             self.is_updating = False
 
     def save_log(self):
@@ -118,7 +121,7 @@ class App:
             FindMeGoogleIP(domains).run()
 
             self.run_button.configure(state=ACTIVE)
-            self.output_stream.flush()
+            self.output_stream.real_flush()
             self.is_running = False
 
 
