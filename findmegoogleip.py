@@ -10,8 +10,8 @@ import re
 import dns.resolver
 import dns.exception
 import os
-import urllib.request
-import configparser
+import urllib2
+import settings
 import logging
 
 
@@ -24,17 +24,16 @@ class FindMeGoogleIP:
         self.dns_servers = []
         self.resolved_ips = {}
         self.reachable = []
-        self.config = configparser.ConfigParser()
-        self.config.read(os.path.join(FindMeGoogleIP.BASE_DIR, 'config.ini'))
 
     @staticmethod
     def read_domains():
-        return [file.replace('.txt', '') for file in os.listdir(FindMeGoogleIP.DNS_SERVERS_DIR)]
+        return [f.replace('.txt', '') for f in os.listdir(FindMeGoogleIP.DNS_SERVERS_DIR)]
 
-    def run_threads(self, threads, limit=None):
+    @staticmethod
+    def run_threads(threads, limit=None):
         """A general way to run multiple threads"""
         if not limit:
-            limit = self.config['default'].getint('threads', 200)
+            limit = settings.threads
         lock = threading.Lock()
         for thread in threads:
             thread.lock = lock
@@ -52,15 +51,14 @@ class FindMeGoogleIP:
 
         try:
             for location in self.locations:
-                file = os.path.join(self.DNS_SERVERS_DIR, location+'.txt')
-                logging.info('reading servers from file %s' % file)
-                with open(file) as f:
+                domain_file = os.path.join(self.DNS_SERVERS_DIR, location+'.txt')
+                logging.info('reading servers from file %s' % domain_file)
+                with open(domain_file) as f:
                     data = f.read().strip()
                     if data:
                         servers = re.split('\s+', data)
                         random.shuffle(servers)
-                        server_limit = slice(self.config['default'].getint('servers', 200))
-                        for server in servers[server_limit]:
+                        for server in servers[:settings.servers]:
                             self.dns_servers.append((server, location))
         except IOError:
             logging.error("Cannot read dns servers")
@@ -138,7 +136,7 @@ class DNSServerFileDownload(threading.Thread):
     def run(self):
         try:
             logging.info('downloading file %s' % self.url)
-            data = urllib.request.urlopen(self.url, timeout=5).read().decode()
+            data = urllib2.urlopen(self.url, timeout=5).read().decode()
             with open(self.file, mode='w') as f:
                 f.write(data)
         except IOError as err:
@@ -169,7 +167,7 @@ class ServiceCheck(threading.Thread):
             with self.lock:
                 self.servicing.append((self.ip, rtt))
 
-        except (ssl.CertificateError, ssl.SSLError, socket.timeout, ConnectionError, OSError) as err:
+        except (ssl.CertificateError, ssl.SSLError, socket.timeout, OSError) as err:
             logging.error("error(%s) on connecting %s:%s" % (str(err), self.ip, self.port))
 
 

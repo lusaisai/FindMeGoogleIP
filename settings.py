@@ -1,4 +1,3 @@
-[default]
 # the number of threads(dns query or ssl service check) running concurrently
 threads = 200
 
