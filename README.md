@@ -5,7 +5,7 @@ Query hundreds of thousands of dns servers to find the google ips.
 
 Explain
 -------
-<a href="http://public-dns.tk/" target="_blank">public-dns.tk</a> has lots of public dns servers, this script queries them and find available ips.
+<a href="http://public-dns.info/" target="_blank">public-dns.info</a> has lots of public dns servers, this script queries them and find available ips.
 
 Prerequisites
 -------

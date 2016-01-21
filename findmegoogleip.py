@@ -129,7 +129,7 @@ class DNSServerFileDownload(threading.Thread):
     def __init__(self, location):
         threading.Thread.__init__(self)
         self.domain = location
-        self.url = "http://public-dns.tk/nameserver/%s.txt" % location
+        self.url = "http://public-dns.info/nameserver/%s.txt" % location
         self.file = os.path.join(FindMeGoogleIP.DNS_SERVERS_DIR, '%s.txt' % location)
         self.lock = None
 
