@@ -35,11 +35,13 @@ class FindMeGoogleIP:
         if not limit:
             limit = settings.threads
         lock = threading.Lock()
-        for thread in threads:
+        total = len(threads)
+        for index, thread in enumerate(threads):
             thread.lock = lock
             if threading.active_count() > limit:
                 time.sleep(1)
 
+            logging.info("Starting thread (%s/%s)" % (index, total))
             thread.start()
 
         for thread in threads:

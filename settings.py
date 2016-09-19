@@ -2,4 +2,4 @@
 threads = 50
 
 # the maximum number of dns servers to query in a certain country
-servers = 5000
+servers = 2000
