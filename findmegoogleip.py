@@ -13,6 +13,7 @@ import os
 import urllib2
 import settings
 import logging
+import json
 
 
 class FindMeGoogleIP:
@@ -111,6 +112,9 @@ class FindMeGoogleIP:
 
             logging.info("%d IPs concatenated:" % len(self.reachable))
             logging.info('|'.join(ip for ip, rtt in reachable_sorted))
+
+            logging.info("%d IPs in JSON format:" % len(self.reachable))
+            logging.info(json.dumps([ip for ip, rtt in reachable_sorted]))
         else:
             logging.info("No available servers found")
 
