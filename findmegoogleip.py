@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/python2
 
 import random
 import threading
@@ -142,7 +142,9 @@ class DNSServerFileDownload(threading.Thread):
     def run(self):
         try:
             logging.info('downloading file %s' % self.url)
-            data = urllib2.urlopen(self.url, timeout=5).read().decode()
+            proxy_handler = urllib2.ProxyHandler(proxies=settings.proxies)
+            opener = urllib2.build_opener(proxy_handler)
+            data = opener.open(self.url, timeout=5).read().decode()
             with open(self.file, mode='w') as f:
                 f.write(data)
         except IOError as err:
