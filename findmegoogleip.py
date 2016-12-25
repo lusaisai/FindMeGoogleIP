@@ -128,6 +128,7 @@ class FindMeGoogleIP:
             return
         if not os.path.isfile(settings.gae_user_json_file):
             logging.error("%s does not exist" % (settings.gae_user_json_file,))
+            return
 
         with open(settings.gae_user_json_file) as f:
             config = json.load(f)
