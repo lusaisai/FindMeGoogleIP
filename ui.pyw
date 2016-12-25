@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/python2
 
 from Tkinter import *
 import ttk

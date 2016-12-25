@@ -25,13 +25,15 @@ class FindMeGoogleIP:
         self.dns_servers = []
         self.resolved_ips = {}
         self.reachable = []
+        self.concatenated_result = None
+        self.json_result = None
+        self.progress_percentage = 0
 
     @staticmethod
     def read_domains():
         return [f.replace('.txt', '') for f in os.listdir(FindMeGoogleIP.DNS_SERVERS_DIR)]
 
-    @staticmethod
-    def run_threads(threads, limit=None):
+    def run_threads(self, threads, limit=None):
         """A general way to run multiple threads"""
         if not limit:
             limit = settings.threads
@@ -43,6 +45,7 @@ class FindMeGoogleIP:
                 time.sleep(1)
 
             logging.info("Starting thread (%s/%s)" % (index, total))
+            self.progress_percentage = (index+1) * 100 / total
             thread.start()
 
         for thread in threads:
@@ -105,18 +108,34 @@ class FindMeGoogleIP:
     def show_results(self):
         if self.reachable:
             reachable_sorted = sorted(self.reachable, key=lambda x: x[1])
+            self.concatenated_result = '|'.join(ip for ip, rtt in reachable_sorted)
+            self.json_result = [ip for ip, rtt in reachable_sorted]
 
             logging.info("%d IPs ordered by approximate delay time(milliseconds):" % len(reachable_sorted))
             for item in reachable_sorted:
                 logging.info((item[0], item[1], self.resolved_ips[item[0]][1]))
 
             logging.info("%d IPs concatenated:" % len(self.reachable))
-            logging.info('|'.join(ip for ip, rtt in reachable_sorted))
+            logging.info(self.concatenated_result)
 
             logging.info("%d IPs in JSON format:" % len(self.reachable))
-            logging.info(json.dumps([ip for ip, rtt in reachable_sorted]))
+            logging.info(json.dumps(self.json_result))
         else:
             logging.info("No available servers found")
+
+    def write_into_gae_user_json(self):
+        if os.path.isfile(settings.gae_user_json_file) is None:
+            return
+        if not os.path.isfile(settings.gae_user_json_file):
+            logging.error("%s does not exist" % (settings.gae_user_json_file,))
+
+        with open(settings.gae_user_json_file) as f:
+            config = json.load(f)
+            config['HostMap']['google_hk'] = self.json_result
+
+        with open(settings.gae_user_json_file, 'w') as f:
+            json.dump(config, f, sort_keys=True, indent=4, separators=(',', ': '))
+            logging.info('Written into %s' % (settings.gae_user_json_file,))
 
     def run(self):
         self.get_dns_servers()
@@ -124,6 +143,7 @@ class FindMeGoogleIP:
         self.check_service()
         # self.cleanup_low_quality_ips()
         self.show_results()
+        self.write_into_gae_user_json()
 
     def update_dns_files(self):
         threads = [DNSServerFileDownload(location) for location in FindMeGoogleIP.read_domains()]
